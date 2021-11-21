@@ -1,0 +1,28 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'java'
+}
+
+group = 'com.PartyCalculator'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    //Tg API
+    implementation 'io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.6'
+
+    //RxJava
+    implementation "io.reactivex.rxjava3:rxjava:3.1.2"
+}
+
+test {
+    useJUnitPlatform()
+}
