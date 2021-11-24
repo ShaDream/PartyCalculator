@@ -21,6 +21,13 @@ dependencies {
 
     //RxJava
     implementation "io.reactivex.rxjava3:rxjava:3.1.2"
+
+    // Jetbrains Exposed
+    implementation 'org.jetbrains.exposed:exposed-core:0.36.1'
+    implementation 'org.jetbrains.exposed:exposed-dao:0.36.1'
+    implementation 'org.jetbrains.exposed:exposed-jdbc:0.36.1'
+
+    runtimeOnly 'org.postgresql:postgresql:42.3.1'
 }
 
 test {
