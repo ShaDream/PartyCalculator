@@ -4,12 +4,15 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
+import com.sksamuel.hoplite.ConfigLoader
+import config.ApplicationConfig
 import feature.StartFeature
 import message.Message
 import state.StateManager
 
 fun main() {
-    val TOKEN_API = ""
+
+    val config = ConfigLoader().loadConfigOrThrow<ApplicationConfig>("/application.conf")
 
     val actionsManager = ActionsManager.Builder()
         .setBaseManager(MainActionManager())
@@ -20,7 +23,7 @@ fun main() {
     )
 
     val bot = bot {
-        token = TOKEN_API
+        token = config.telegram.token
         dispatch {
             text {
                 val action = actionsManager.getAction(text, message.chat.id)
