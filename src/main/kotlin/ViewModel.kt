@@ -25,5 +25,4 @@ class ViewModel(
     }
 
     fun pullAction(action: Action) = actions.onNext(action)
-
 }
