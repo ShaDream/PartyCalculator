@@ -9,7 +9,7 @@ import message.Message
 import state.StateManager
 
 fun main() {
-    val TOKEN_API = ""
+    val TOKEN_API = "883462233:AAEcOegWNoTtR7mWmz0zCDgDJNlw9KvVEeA"
 
     val actionsManager = ActionsManager.Builder()
         .setBaseManager(MainActionManager())
