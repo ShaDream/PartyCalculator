@@ -1,15 +1,19 @@
 import action.ActionsManager
+import action.MainActionManager
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
 import feature.StartFeature
 import message.Message
+import state.StateManager
 
 fun main() {
-    val TOKEN_API = ""
+    val TOKEN_API = "883462233:AAEcOegWNoTtR7mWmz0zCDgDJNlw9KvVEeA"
 
-    val actionsManager = ActionsManager()
+    val actionsManager = ActionsManager.Builder()
+        .setBaseManager(MainActionManager())
+        .build()
 
     val viewModel = ViewModel(
         StartFeature()
