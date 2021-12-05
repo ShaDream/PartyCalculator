@@ -13,7 +13,8 @@ class StartFeature : IFeature {
             .filter { it is Action.Start }
             .map { action ->
                 when (action) {
-                    is Action.Start -> Message.Text("Привет, это стартовый обработчик", action.chatId)
+                    is Action.Start -> Message.Text("Привет, это стартовый обработчик", action.chatId, listOf("/start", "/help","/people",
+                    "/receipt", "/group"))
                     else -> throw IllegalArgumentException("Такой Action не обрабатывается этой фичей")
                 }
             }
