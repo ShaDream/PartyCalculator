@@ -4,15 +4,11 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
-import com.github.kotlintelegrambot.entities.keyboard.KeyboardButton
-import com.github.kotlintelegrambot.entities.KeyboardReplyMarkup
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
+import feature.HelpFeature
 import feature.StartFeature
 import message.Message
-import state.StateManager
-import utility.Utility
-import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext
 
 fun main() {
 
@@ -22,9 +18,14 @@ fun main() {
         .setBaseManager(MainActionManager())
         .build()
 
-    val viewModel = ViewModel(
-        StartFeature()
-    )
+    val viewModel =
+        ViewModel(
+            listOf(
+                StartFeature(),
+                HelpFeature()
+            )
+
+        )
 
     val bot = bot {
         token = config.telegram.token
@@ -40,13 +41,9 @@ fun main() {
     viewModel.messages.subscribe { message ->
         when (message) {
             is Message.Text -> bot.sendMessage(
-                ChatId.fromId(message.chatId),
-                message.message,
-
-                replyMarkup = if(message.buttonNames.count() > 0)
-                    KeyboardReplyMarkup(keyboard = Utility.GenerateUsersButton(message.buttonNames), oneTimeKeyboard = true)
-                //Ещё можно стереть клавиатуру, отправив обратно ReplyKeyboardRemove()
-                else null
+                chatId = ChatId.fromId(message.chatId),
+                text = message.message,
+                replyMarkup = message.buttons.toKeyboardReplyMarkup()
             )
         }
     }
