@@ -8,22 +8,17 @@ import message.Buttons
 import java.lang.IllegalArgumentException
 
 
-class StartFeature : IFeature {
+class HelpFeature : IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
-            .filter { it is Action.Start }
+            .filter { it is Action.Help }
             .map { action ->
                 when (action) {
-                    is Action.Start ->
+                    is Action.Help ->
                         Message.Text(
-                            message = "Привет, это стартовый обработчик",
+                            message = "Это обработчик для команды /help",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    "/start", "/help", "/people",
-                                    "/receipt", "/group"
-                                )
-                            )
+                            buttons = Buttons.from(listOf()) // Кнопки не меняем
                         )
                     else -> throw IllegalArgumentException("Такой Action не обрабатывается этой фичей")
                 }

@@ -1,7 +1,7 @@
 package message
 
-sealed class Message(chatId: Long) {
+import com.github.kotlintelegrambot.entities.KeyboardReplyMarkup
 
-    data class Text(val message: String, val chatId: Long): Message(chatId)
-
+sealed class Message(chatId: Long, buttons: Buttons) {
+    data class Text(val message: String, val chatId: Long, val buttons: Buttons) : Message(chatId, buttons)
 }

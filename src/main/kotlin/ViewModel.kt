@@ -6,20 +6,14 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import message.Message
 import java.util.concurrent.TimeUnit
 
-class ViewModel(
-    startFeature : IFeature
-) {
+class ViewModel(features: List<IFeature>) {
 
     private val actions: PublishSubject<Action> = PublishSubject.create()
 
     val messages: PublishSubject<Message> = PublishSubject.create()
 
     init {
-        merge(
-            listOf(
-                startFeature.bind(actions),
-            )
-        )
+        merge(features.map { it.bind(actions) })
             .concatMap { i -> Observable.just(i).delay(100, TimeUnit.MILLISECONDS) }
             .subscribe(messages::onNext)
     }

@@ -6,9 +6,9 @@ import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
+import feature.HelpFeature
 import feature.StartFeature
 import message.Message
-import state.StateManager
 
 fun main() {
 
@@ -18,9 +18,14 @@ fun main() {
         .setBaseManager(MainActionManager())
         .build()
 
-    val viewModel = ViewModel(
-        StartFeature()
-    )
+    val viewModel =
+        ViewModel(
+            listOf(
+                StartFeature(),
+                HelpFeature()
+            )
+
+        )
 
     val bot = bot {
         token = config.telegram.token
@@ -35,9 +40,15 @@ fun main() {
 
     viewModel.messages.subscribe { message ->
         when (message) {
-            is Message.Text -> bot.sendMessage(ChatId.fromId(message.chatId), message.message)
+            is Message.Text -> bot.sendMessage(
+                chatId = ChatId.fromId(message.chatId),
+                text = message.message,
+                replyMarkup = message.buttons.toKeyboardReplyMarkup()
+            )
         }
     }
 
     bot.startPolling()
 }
+
+//https://github.com/kotlin-telegram-bot/kotlin-telegram-bot/blob/main/samples/dispatcher/src/main/kotlin/com/github/kotlintelegrambot/dispatcher/Main.kt
