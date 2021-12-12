@@ -9,7 +9,8 @@ CREATE TABLE participants
 CREATE TABLE receipts
 (
     id      BIGSERIAL PRIMARY KEY,
-    chat_id BIGINT NOT NULL
+    chat_id BIGINT NOT NULL,
+    full_amount  REAL NOT NULL
 );
 
 CREATE TABLE receipt_transactions

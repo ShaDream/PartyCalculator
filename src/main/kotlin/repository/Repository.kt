@@ -28,7 +28,7 @@ data class Receipt(
 )
 
 interface ReceiptRepo {
-    fun addReceipt(from: UserId, to: List<UserId>, amount: Float): Receipt
+    fun addReceipt(from: UserId, to: List<UserId>, fullAmount: Float): Receipt
     fun removeReceipt(id: ReceiptId): Boolean
     fun getReceipt(id: ReceiptId): Receipt
     fun getReceipts(chatId: Long): List<Receipt>
