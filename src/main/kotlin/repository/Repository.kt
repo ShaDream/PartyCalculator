@@ -2,7 +2,8 @@ package repository
 
 interface ParticipantsRepo {
     fun createUser(name: String, chatId: Long): UserId
-    fun fetUsersByChatId(chatId: Long): List<User>
+    fun hasUser(name: String, chatId: Long): Boolean
+    fun getUsersByChatId(chatId: Long): List<User>
     fun removeUser(id: UserId): Boolean
     fun getUserStat(id: UserId): UserReceipt
     fun getAllUserStats(id: UserId): List<UserReceipt>
