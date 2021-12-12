@@ -10,6 +10,14 @@ sealed class Action(chatId: Long) {
         data class Group(val chatId: Long) : Main(chatId)
     }
 
+    sealed class Participant(chatId: Long) : Action(chatId) {
+        sealed class Add(chatId: Long) : Participant(chatId) {
+            data class Start(val chatId: Long) : Add(chatId)
+            data class End(val chatId: Long) : Add(chatId)
+            data class New(val chatId: Long, val message: String) : Add(chatId)
+        }
+    }
+
     data class UndefinedAction(val chatId: Long) : Action(chatId)
 
 }

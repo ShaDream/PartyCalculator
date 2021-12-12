@@ -8,6 +8,7 @@ class MainActionManager : IActionsManager {
             "/people" -> Action.Main.People(chatId)
             "/receipt" -> Action.Main.Receipt(chatId)
             "/group" -> Action.Main.Group(chatId)
+            "/createPeople" -> Action.Participant.Add.Start(chatId)
             else -> Action.UndefinedAction(chatId)
         }
     }

@@ -1,5 +1,6 @@
 import action.ActionsManager
 import action.MainActionManager
+import action.ParticipantActionManager
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.text
@@ -7,20 +8,36 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
 import feature.MainFeature
+import feature.ParticipantAddFeature
+import manager.ParticipantManager
 import message.Message
+import org.jetbrains.exposed.sql.Database
+import repository.Participants
+import state.State
 
 fun main() {
 
     val config = ConfigLoader().loadConfigOrThrow<ApplicationConfig>("/application.conf")
 
+    val database = Database.connect(
+        url = config.database.url,
+        driver = "org.postgresql.Driver",
+        user = config.database.user,
+        password = config.database.password,
+    )
+
+    val participantsRepo = Participants(database)
+
     val actionsManager = ActionsManager.Builder()
         .setBaseManager(MainActionManager())
+        .addManager(State.People, ParticipantActionManager())
         .build()
 
     val viewModel =
         ViewModel(
             listOf(
-                MainFeature()
+                MainFeature(),
+                ParticipantAddFeature(participantsRepo)
             )
 
         )
