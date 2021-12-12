@@ -16,6 +16,8 @@ sealed class Action(chatId: Long) {
             data class End(val chatId: Long) : Add(chatId)
             data class New(val chatId: Long, val message: String) : Add(chatId)
         }
+
+        data class List(val chatId: Long) : Participant(chatId)
     }
 
     data class UndefinedAction(val chatId: Long) : Action(chatId)

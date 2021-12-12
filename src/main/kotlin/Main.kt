@@ -9,6 +9,7 @@ import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
 import feature.MainFeature
 import feature.ParticipantAddFeature
+import feature.ParticipantListFeature
 import manager.ParticipantManager
 import message.Message
 import org.jetbrains.exposed.sql.Database
@@ -37,7 +38,8 @@ fun main() {
         ViewModel(
             listOf(
                 MainFeature(),
-                ParticipantAddFeature(participantsRepo)
+                ParticipantAddFeature(participantsRepo),
+                ParticipantListFeature(participantsRepo),
             )
 
         )
