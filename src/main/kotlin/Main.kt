@@ -6,8 +6,7 @@ import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
-import feature.HelpFeature
-import feature.StartFeature
+import feature.MainFeature
 import message.Message
 
 fun main() {
@@ -21,8 +20,7 @@ fun main() {
     val viewModel =
         ViewModel(
             listOf(
-                StartFeature(),
-                HelpFeature()
+                MainFeature()
             )
 
         )
