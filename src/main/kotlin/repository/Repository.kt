@@ -6,7 +6,6 @@ interface ParticipantsRepo {
     fun getUsersByChatId(chatId: Long): List<User>
     fun removeUser(id: UserId): Boolean
     fun getUserStat(id: UserId): UserReceipt
-    fun getAllUserStats(id: UserId): List<UserReceipt>
 }
 
 data class UserId(val id: Long)
@@ -16,7 +15,7 @@ data class User(val id: UserId, val name: String, val chatId: Long)
  * Инфо о том сколько пользователь потратил, и сколько должен.
  * Это необходимо для расчёта кому сколько скидывать
  */
-data class UserReceipt(val user: User, val from: Float, val to: Float)
+data class UserReceipt(val user: User, val owes: Float, val spend: Float)
 
 data class ReceiptId(val id: Long)
 

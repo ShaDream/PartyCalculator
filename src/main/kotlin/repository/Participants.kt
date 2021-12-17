@@ -1,6 +1,7 @@
 package repository
 
 import database.ParticipantsTable
+import database.ReceiptTransactionsTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -46,10 +47,36 @@ class Participants(private val database: Database) : ParticipantsRepo {
     }
 
     override fun getUserStat(id: UserId): UserReceipt {
-        TODO("Not yet implemented")
-    }
+        return transaction(database) {
+            val user = ParticipantsTable.select { ParticipantsTable.id eq id.id }.map {
+                User(
+                    id = UserId(it[ParticipantsTable.id].value),
+                    chatId = it[ParticipantsTable.chatId],
+                    name = it[ParticipantsTable.name]
+                )
+            }.first()
 
-    override fun getAllUserStats(id: UserId): List<UserReceipt> {
-        TODO("Not yet implemented")
+            var owes = 0f
+            var spend = 0f
+
+            ReceiptTransactionsTable.select {
+                (ReceiptTransactionsTable.toParticipant eq id.id) or (ReceiptTransactionsTable.fromParticipant eq id.id)
+            }.forEach {
+                val to = it[ReceiptTransactionsTable.toParticipant]
+                val amount = it[ReceiptTransactionsTable.amount]
+
+                if (to == id.id) {
+                    spend -= amount
+                } else {
+                    owes += amount
+                }
+            }
+
+            UserReceipt(
+                user = user,
+                owes = owes,
+                spend = spend,
+            )
+        }
     }
 }
