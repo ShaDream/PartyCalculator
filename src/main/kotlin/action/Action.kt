@@ -20,7 +20,10 @@ sealed class Action(chatId: Long) {
         sealed class Remove(chatId: Long): Action(chatId){
             data class Start(val chatId: Long): Remove(chatId)
             data class End(val chatId: Long): Remove(chatId)
-            data class Delete(val chatId: Long, val name: String) : Remove(chatId)
+            data class Next(val chatId: Long): Remove(chatId)
+            data class Previous(val chatId: Long): Remove(chatId)
+            data class Choice(val chatId: Long, val message: String) : Remove(chatId)
+            data class Delete(val chatId: Long) : Remove(chatId)
         }
 
         data class List(val chatId: Long) : Participant(chatId)

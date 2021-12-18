@@ -11,11 +11,11 @@ data class Buttons(private val values: List<KeyboardButton>) {
         }
     }
 
-    fun toKeyboardReplyMarkup(): KeyboardReplyMarkup? {
+    fun toKeyboardReplyMarkup(columns: Int): KeyboardReplyMarkup? {
         if (values.isEmpty()) return null
         // Ещё можно стереть клавиатуру, отправив обратно ReplyKeyboardRemove()
         return KeyboardReplyMarkup(
-            keyboard = values.map { listOf(it) },
+            keyboard = values.chunked(columns),
             resizeKeyboard = true
         )
     }

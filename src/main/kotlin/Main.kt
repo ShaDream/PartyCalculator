@@ -10,6 +10,7 @@ import config.ApplicationConfig
 import feature.MainFeature
 import feature.participant.ParticipantAddFeature
 import feature.participant.ParticipantListFeature
+import feature.participant.ParticipantsDeleteFeature
 import message.Message
 import org.jetbrains.exposed.sql.Database
 import repository.Participants
@@ -39,6 +40,7 @@ fun main() {
                 MainFeature(),
                 ParticipantAddFeature(participantsRepo),
                 ParticipantListFeature(participantsRepo),
+                ParticipantsDeleteFeature(participantsRepo)
             )
 
         )
@@ -59,7 +61,7 @@ fun main() {
             is Message.Text -> bot.sendMessage(
                 chatId = ChatId.fromId(message.chatId),
                 text = message.message,
-                replyMarkup = message.buttons.toKeyboardReplyMarkup()
+                replyMarkup = message.buttons.toKeyboardReplyMarkup(3)
             )
         }
     }
