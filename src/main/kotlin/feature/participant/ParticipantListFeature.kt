@@ -1,6 +1,7 @@
-package feature
+package feature.participant
 
 import action.Action
+import feature.IFeature
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import message.Buttons

@@ -8,9 +8,8 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
 import feature.MainFeature
-import feature.ParticipantAddFeature
-import feature.ParticipantListFeature
-import manager.ParticipantManager
+import feature.participant.ParticipantAddFeature
+import feature.participant.ParticipantListFeature
 import message.Message
 import org.jetbrains.exposed.sql.Database
 import repository.Participants

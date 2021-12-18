@@ -1,6 +1,7 @@
-package feature
+package feature.participant
 
 import action.Action
+import feature.IFeature
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.ParticipantManager
@@ -19,14 +20,14 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                 when (action) {
                     is Action.Participant.Add.Start -> {
                         val chatId = action.chatId
-                        if (ParticipantManager.hasInParticipantState(chatId)) {
+                        if (ParticipantManager.hasAddState(chatId)) {
                             Message.Text(
                                 message = "Вы уже в режиме добавление участников. Введите имя нового участника:",
                                 chatId = chatId,
                                 buttons = Buttons.from(listOf("/end")),
                             )
                         } else {
-                            ParticipantManager.addToParticipantState(chatId)
+                            ParticipantManager.addAddState(chatId)
                             StateManager.setStateByChatId(chatId, State.People)
 
                             Message.Text(
@@ -39,8 +40,8 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
 
                     is Action.Participant.Add.End -> {
                         val chatId = action.chatId
-                        if (ParticipantManager.hasInParticipantState(chatId)) {
-                            ParticipantManager.removeFromParticipantState(chatId)
+                        if (ParticipantManager.hasAddState(chatId)) {
+                            ParticipantManager.removeAddState(chatId)
                             StateManager.setStateByChatId(chatId, State.None)
 
                             Message.Text(
@@ -60,7 +61,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                     is Action.Participant.Add.New -> {
                         val chatId = action.chatId
                         val message = action.message
-                        if (!ParticipantManager.hasInParticipantState(chatId)) {
+                        if (!ParticipantManager.hasAddState(chatId)) {
                             return@map Message.Text(
                                 message = "Вы не находитесь в режиме добавления участников:",
                                 chatId = chatId,
