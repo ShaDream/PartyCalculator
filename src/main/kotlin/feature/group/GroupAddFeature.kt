@@ -2,6 +2,7 @@ package feature.group
 
 import action.Action
 import feature.IFeature
+import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.GroupManager
@@ -11,7 +12,7 @@ import repository.*
 import state.State
 import state.StateManager
 
-class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
+class GroupAddFeature(private val groupRepo: GroupRepo, private val participantsRepo: ParticipantsRepo) : IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Group.Add }
@@ -64,6 +65,20 @@ class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
                         if (groupRepo.hasGroup(action.chatId, action.message)) {
                             return@map Message.Text(
                                 message = "Данная группы уже была добавлена!",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+                        if (participantsRepo.hasUser(action.message, action.chatId)) {
+                            return@map Message.Text(
+                                message = "Есть участник с таким именем.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+                        if (!NameChecker.isNameValid(action.message)) {
+                            return@map Message.Text(
+                                message = "Недопустимое имя для группы. Возможно состоит только из цифр или содержит запрещенные символы(\"/\" для примера)",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf()),
                             )

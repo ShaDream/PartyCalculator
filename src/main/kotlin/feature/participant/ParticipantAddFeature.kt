@@ -2,17 +2,20 @@ package feature.participant
 
 import action.Action
 import feature.IFeature
+import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.ParticipantManager
 import message.Buttons
 import message.Message
+import repository.GroupRepo
 import repository.ParticipantsRepo
 import state.State
 import state.StateManager
 import java.lang.IllegalArgumentException
 
-class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IFeature {
+class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, private val groupRepo: GroupRepo) :
+    IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Participant.Add }
@@ -77,6 +80,22 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                         if (participantsRepo.hasUser(message, chatId)) {
                             return@map Message.Text(
                                 message = "Такой участник уже есть",
+                                chatId = chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+
+                        if (groupRepo.hasGroup(chatId, message)) {
+                            return@map Message.Text(
+                                message = "Такое имя используется группой",
+                                chatId = chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+
+                        if (!NameChecker.isNameValid(message)) {
+                            return@map Message.Text(
+                                message = "Имя не валидно(состоит только из цифр или содержит запрещенные символы(\"/\" для примера))",
                                 chatId = chatId,
                                 buttons = Buttons.from(listOf()),
                             )

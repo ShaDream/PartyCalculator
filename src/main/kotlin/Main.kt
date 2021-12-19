@@ -50,11 +50,11 @@ fun main() {
         ViewModel(
             listOf(
                 MainFeature(),
-                ParticipantAddFeature(participantsRepo),
+                ParticipantAddFeature(participantsRepo, groupsRepo),
                 ParticipantListFeature(participantsRepo),
                 ParticipantsDeleteFeature(participantsRepo),
                 ReceiptAddFeature(participantsRepo, groupsRepo, receiptRepo),
-                GroupAddFeature(groupsRepo),
+                GroupAddFeature(groupsRepo, participantsRepo),
                 GroupEditFeature(groupsRepo, participantsRepo),
                 GroupListFeature(groupsRepo),
             )
