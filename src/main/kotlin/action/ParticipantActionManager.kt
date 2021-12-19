@@ -15,8 +15,8 @@ class ParticipantActionManager : IActionsManager {
             ParticipantManager.hasRemoveState(chatId) -> {
                 return when (command) {
                     "/end" -> Action.Participant.Remove.End(chatId)
-                    "/next" -> Action.Participant.Remove.Next(chatId)
-                    "/previous" -> Action.Participant.Remove.Previous(chatId)
+                    "➡️" -> Action.Participant.Remove.Next(chatId)
+                    "⬅️" -> Action.Participant.Remove.Previous(chatId)
                     "/delete" -> Action.Participant.Remove.Delete(chatId)
                     else -> Action.Participant.Remove.Choice(chatId, command.orEmpty())
                 }

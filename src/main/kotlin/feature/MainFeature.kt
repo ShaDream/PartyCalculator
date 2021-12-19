@@ -19,8 +19,8 @@ class MainFeature : IFeature {
                             chatId = action.chatId,
                             buttons = Buttons.from(
                                 listOf(
-                                    "/start", "/help", "/people",
-                                    "/receipt", "/group"
+                                    listOf("/start", "/help"),
+                                    listOf("/receipt", "/people", "/group"),
                                 )
                             )
                         )
@@ -34,7 +34,12 @@ class MainFeature : IFeature {
                         Message.Text(
                             message = "Доступные методы для взаимодействия с участниками",
                             chatId = action.chatId,
-                            buttons = Buttons.from(listOf("/createPeople", "/deletePeople", "/listPeople", "/start"))
+                            buttons = Buttons.from(
+                                listOf(
+                                    listOf("/start"),
+                                    listOf("/createPeople", "/deletePeople", "/listPeople")
+                                )
+                            )
                         )
                     is Action.Main.Group ->
                         Message.Text(
@@ -42,10 +47,12 @@ class MainFeature : IFeature {
                             chatId = action.chatId,
                             buttons = Buttons.from(
                                 listOf(
-                                    "/createGroup",
-                                    "/deleteGroup",
-                                    "/listGroup",
-                                    "/start",
+                                    listOf("/start"),
+                                    listOf(
+                                        "/createGroup",
+                                        "/deleteGroup",
+                                        "/listGroup"
+                                    )
                                 )
                             )
                         )
@@ -55,11 +62,15 @@ class MainFeature : IFeature {
                             chatId = action.chatId,
                             buttons = Buttons.from(
                                 listOf(
-                                    "/addReceipt",
-                                    "/removeReceipt",
-                                    "/listReceipts",
-                                    "/calculateReceipts",
-                                    "/start",
+                                    listOf("/start"),
+                                    listOf(
+                                        "/addReceipt",
+                                        "/removeReceipt"
+                                    ),
+                                    listOf(
+                                        "/listReceipts",
+                                        "/calculateReceipts"
+                                    )
                                 )
                             )
                         )

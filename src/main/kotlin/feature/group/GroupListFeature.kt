@@ -13,7 +13,7 @@ import repository.ParticipantsRepo
 import state.State
 import state.StateManager
 
-class GroupListFeature (private val groupRepo: GroupRepo) : IFeature {
+class GroupListFeature(private val groupRepo: GroupRepo) : IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Group.List }
@@ -25,7 +25,7 @@ class GroupListFeature (private val groupRepo: GroupRepo) : IFeature {
                         Message.Text(
                             message = "Здесь будет список всех групп кнопками",
                             chatId = action.chatId,
-                            buttons = Buttons.from(listOf("/end"))
+                            buttons = Buttons.from(listOf(listOf("/end")))
                         )
                     }
 
@@ -37,7 +37,7 @@ class GroupListFeature (private val groupRepo: GroupRepo) : IFeature {
                             Message.Text(
                                 message = "Вы вышли из режима просмотра групп.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf("/group")),
+                                buttons = Buttons.from(listOf(listOf("/group"))),
                             )
                         } else {
                             Message.Text(

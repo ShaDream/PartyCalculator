@@ -30,18 +30,19 @@ class ReceiptAddFeature(
         return changed
     }
 
-    fun getParticipantsButtons(groups: ChoiceManager<Group>, participants: ChoiceManager<User>): List<String> {
-        return participants.getButtons { it.name } +
-                "/previous" + "/next" +
-                groups.getButtons { it.name } +
-                "/previousGroup" + "/nextGroup" +
-                "/back" + "/discard" + "/apply"
+    fun getParticipantsButtons(groups: ChoiceManager<Group>, participants: ChoiceManager<User>): List<List<String>> {
+        return listOf(
+            participants.getButtons({ it.name }, "⬅️", "➡️"),
+            groups.getButtons({ it.name }, "◀️", "▶️"),
+            listOf("/back", "/discard", "/apply")
+        )
     }
 
-    fun getBuyerButtons(buyer: ChoiceManager<User>): List<String> {
-        return buyer.getButtons { it.name } +
-                "/previous" + "/next" +
-                "/back" + "/discard" + "/apply"
+    fun getBuyerButtons(buyer: ChoiceManager<User>): List<List<String>> {
+        return listOf(
+            buyer.getButtons({ it.name }, "⬅️", "➡️"),
+            listOf("/back", "/discard", "/apply")
+        )
     }
 
     override fun bind(actions: Observable<Action>): Observable<Message> {
@@ -69,7 +70,7 @@ class ReceiptAddFeature(
                             message = "Введите сумму покупок:",
                             chatId = it.chatId,
                             buttons = Buttons.from(
-                                listOf("/discard")
+                                listOf(listOf("/discard"))
                             )
                         )
                     }
@@ -290,7 +291,7 @@ class ReceiptAddFeature(
                                     message = "Чек добавлен",
                                     chatId = it.chatId,
                                     buttons = Buttons.from(
-                                        listOf("/receipt")
+                                        listOf(listOf("/receipt"))
                                     )
                                 )
                             }
@@ -335,7 +336,7 @@ class ReceiptAddFeature(
                                     message = "Введите сумму покупок:",
                                     chatId = it.chatId,
                                     buttons = Buttons.from(
-                                        listOf("/discard")
+                                        listOf(listOf("/discard"))
                                     )
                                 )
                             }
@@ -406,7 +407,7 @@ class ReceiptAddFeature(
                             message = "Вы вышли из добавления чека.",
                             chatId = it.chatId,
                             buttons = Buttons.from(
-                                listOf("/receipt")
+                                listOf(listOf("/receipt"))
                             )
                         )
                     }

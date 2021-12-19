@@ -18,22 +18,20 @@ class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
             .map { action ->
                 when (action) {
                     is Action.Group.Add.Start -> {
-                        if(GroupManager.hasAddState(action.chatId))
-                        {
+                        if (GroupManager.hasAddState(action.chatId)) {
                             Message.Text(
                                 message = "Вы уже в режиме добавления группы.",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf())
                             )
-                        }
-                        else {
+                        } else {
                             GroupManager.addAddState(action.chatId)
                             StateManager.setStateByChatId(action.chatId, State.Group)
 
                             Message.Text(
                                 message = "Введите имя новой группы.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf("/end"))
+                                buttons = Buttons.from(listOf(listOf("/end")))
                             )
                         }
                     }
@@ -45,7 +43,7 @@ class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
                             Message.Text(
                                 message = "Вы вышли из режима создания групп.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf("/group"))
+                                buttons = Buttons.from(listOf(listOf("/group")))
                             )
                         } else {
                             Message.Text(
@@ -56,16 +54,14 @@ class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
                         }
                     }
                     is Action.Group.Add.New -> {
-                        if(!GroupManager.hasAddState(action.chatId))
-                        {
+                        if (!GroupManager.hasAddState(action.chatId)) {
                             return@map Message.Text(
                                 message = "Вы не в режиме добавления группы.",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf())
                             )
                         }
-                        if(groupRepo.hasGroup(action.chatId, action.message))
-                        {
+                        if (groupRepo.hasGroup(action.chatId, action.message)) {
                             return@map Message.Text(
                                 message = "Данная группы уже была добавлена!",
                                 chatId = action.chatId,
@@ -79,7 +75,7 @@ class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
                         Message.Text(
                             message = "Вы создали группу: ${action.message}. \n Сейчас Вы находитесь в меню редактирования группы ${action.message}",
                             chatId = action.chatId,
-                            buttons = Buttons.from(listOf("/editMembers"))//, "/Delete", "/end")),
+                            buttons = Buttons.from(listOf(listOf("/editMembers")))//, "/delete", "/end")),
                         )
 
                     }

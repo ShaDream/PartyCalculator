@@ -24,7 +24,9 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                             Message.Text(
                                 message = "Вы уже в режиме добавление участников. Введите имя нового участника:",
                                 chatId = chatId,
-                                buttons = Buttons.from(listOf("/end")),
+                                buttons = Buttons.from(
+                                    listOf(listOf("/end"))
+                                ),
                             )
                         } else {
                             ParticipantManager.addAddState(chatId)
@@ -33,7 +35,9 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                             Message.Text(
                                 message = "Включен режим добавление участников. Введите имя нового участника:",
                                 chatId = chatId,
-                                buttons = Buttons.from(listOf("/end")),
+                                buttons = Buttons.from(
+                                    listOf(listOf("/end"))
+                                ),
                             )
                         }
                     }
@@ -47,7 +51,9 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                             Message.Text(
                                 message = "Вы вышли из режима добавления участников:",
                                 chatId = chatId,
-                                buttons = Buttons.from(listOf("/people")),
+                                buttons = Buttons.from(
+                                    listOf(listOf("/people"))
+                                ),
                             )
                         } else {
                             Message.Text(
@@ -68,7 +74,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo) : IF
                                 buttons = Buttons.from(listOf()),
                             )
                         }
-                        if (participantsRepo.hasUser(message, chatId)){
+                        if (participantsRepo.hasUser(message, chatId)) {
                             return@map Message.Text(
                                 message = "Такой участник уже есть",
                                 chatId = chatId,

@@ -9,10 +9,10 @@ class ReceiptActionManager : IActionsManager {
                 return when (command) {
                     "/discard" -> Action.Receipt.Add.Discard(chatId)
                     "/back" -> Action.Receipt.Add.Back(chatId)
-                    "/previous" -> Action.Receipt.Add.Previous(chatId)
-                    "/next" -> Action.Receipt.Add.Next(chatId)
-                    "/nextGroup" -> Action.Receipt.Add.NextGroup(chatId)
-                    "/previousGroup" -> Action.Receipt.Add.PreviousGroup(chatId)
+                    "⬅️" -> Action.Receipt.Add.Previous(chatId)
+                    "➡️" -> Action.Receipt.Add.Next(chatId)
+                    "▶️" -> Action.Receipt.Add.NextGroup(chatId)
+                    "◀️" -> Action.Receipt.Add.PreviousGroup(chatId)
                     "/apply" -> Action.Receipt.Add.Apply(chatId)
                     else -> {
                         val number = command.orEmpty().toFloatOrNull()

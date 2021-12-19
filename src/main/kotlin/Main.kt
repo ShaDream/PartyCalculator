@@ -77,7 +77,7 @@ fun main() {
             is Message.Text -> bot.sendMessage(
                 chatId = ChatId.fromId(message.chatId),
                 text = message.message,
-                replyMarkup = message.buttons.toKeyboardReplyMarkup(3)
+                replyMarkup = message.buttons.toKeyboardReplyMarkup()
             )
         }
     }

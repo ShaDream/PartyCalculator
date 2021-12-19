@@ -5,6 +5,7 @@ import action.ParticipantActionManager
 import feature.IFeature
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import manager.ChoiceManager
 import manager.ParticipantManager
 import message.Buttons
 import message.Message
@@ -18,6 +19,12 @@ import java.util.*
 
 class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) : IFeature {
 
+    fun getParticipantsButtons(participants: ChoiceManager<User>): List<List<String>> {
+        return listOf(
+            participants.getButtons({ it.name }, "⬅️", "➡️"),
+            listOf("/delete", "/end")
+        )
+    }
 
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
@@ -42,14 +49,12 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
 
                             val choiceManager = ParticipantManager.getChoiceManager(it.chatId)
 
-                            val buttons = choiceManager.getButtons { user: User -> user.name }
-
                             Message.Text(
                                 message = "Выберите участников для удаления.\n" +
                                         "Отображаются только те, у кого нет счетов.\n" +
                                         "Чтобы отображался каждый участник, удалите все чеки.\n",
                                 chatId = it.chatId,
-                                buttons = Buttons.from(buttons + "/previous" + "/next" + "/delete" + "/end")
+                                buttons = Buttons.from(getParticipantsButtons(choiceManager))
                             )
                         }
                     }
@@ -69,8 +74,9 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                             Message.Text(
                                 message = "Вы вышли из режима удаления участников.",
                                 chatId = it.chatId,
-                                //TODO: ChoiceManager.GetButtons()
-                                buttons = Buttons.from(listOf("/people"))
+                                buttons = Buttons.from(
+                                    listOf(listOf("/people"))
+                                )
                             )
                         }
                     }
@@ -100,7 +106,9 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                                 Message.Text(
                                     message = "Пользовалети ${selected.joinToString(separator = ", ") { it.name }} удалены.",
                                     chatId = it.chatId,
-                                    buttons = Buttons.from(listOf("/people"))
+                                    buttons = Buttons.from(
+                                        listOf(listOf("/people"))
+                                    )
                                 )
                             }
                         }
@@ -116,12 +124,11 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                         } else {
                             val choiceManager = ParticipantManager.getChoiceManager(it.chatId)
                             choiceManager.nextPage()
-                            val buttons = choiceManager.getButtons { user: User -> user.name }
 
                             Message.Text(
                                 message = "Следующая страница.",
                                 chatId = it.chatId,
-                                buttons = Buttons.from(buttons + "/next" + "/previous" + "/delete" + "/end")
+                                buttons = Buttons.from(getParticipantsButtons(choiceManager))
                             )
                         }
 
@@ -138,12 +145,10 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                             val choiceManager = ParticipantManager.getChoiceManager(it.chatId)
                             choiceManager.previousPage()
 
-                            val buttons = choiceManager.getButtons { user: User -> user.name }
-
                             Message.Text(
                                 message = "Предыдущая страница.",
                                 chatId = it.chatId,
-                                buttons = Buttons.from(buttons + "/next" + "/previous" + "/delete" + "/end")
+                                buttons = Buttons.from(getParticipantsButtons(choiceManager))
                             )
                         }
                     }
@@ -170,20 +175,16 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                             if (user.isPresent) {
                                 choiceManager.toggle(user.get())
 
-                                val buttons = choiceManager.getButtons { u: User -> u.name }
-
                                 Message.Text(
                                     message = "Вы нажали на ${user.get().name}.",
                                     chatId = it.chatId,
-                                    buttons = Buttons.from(buttons + "/next" + "/previous" + "/delete" + "/end")
+                                    buttons = Buttons.from(getParticipantsButtons(choiceManager))
                                 )
                             } else {
-                                val buttons = choiceManager.getButtons { u: User -> u.name }
-
                                 Message.Text(
                                     message = "Такого пользователя не существует.",
                                     chatId = it.chatId,
-                                    buttons = Buttons.from(buttons + "/next" + "/previous" + "/delete" + "/end")
+                                    buttons = Buttons.from(getParticipantsButtons(choiceManager))
                                 )
                             }
                         }
