@@ -44,6 +44,23 @@ sealed class Action(chatId: Long) {
         }
     }
 
+    sealed class Group(chatId: Long) : Action(chatId) {
+        sealed class Add(chatId: Long) : Group(chatId){
+            data class Start(val chatId: Long) : Group.Add(chatId)
+            data class End(val chatId: Long) : Group.Add(chatId)
+            data class New(val chatId: Long, val message: String) : Group.Add(chatId)
+        }
+
+        sealed class Edit(chatId: Long) : Group(chatId) {
+            data class Start(val chatId: Long, val message: String): Group.Edit(chatId)
+            data class End(val chatId: Long): Group.Edit(chatId)
+            data class Members(val chatId: Long): Group.Edit(chatId)
+        }
+        sealed class List(chatId: Long) : Group(chatId) {
+            data class Start(val chatId: Long): Group.List(chatId)
+            data class End(val chatId: Long): Group.List(chatId)
+        }
+    }
     data class UndefinedAction(val chatId: Long) : Action(chatId)
 
 }

@@ -2,10 +2,9 @@ package repository
 
 import database.GroupMemberTable
 import database.GroupTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import database.ParticipantsTable
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class Groups(val database: Database) : GroupRepo {
@@ -40,28 +39,37 @@ class Groups(val database: Database) : GroupRepo {
         }
     }
 
-    override fun getGroup(id: GroupId): Group {
+    override fun getGroup(chatId: Long, name: String): Group {
         return transaction(database) {
-            val group = GroupTable.select { GroupTable.id eq id.id }.first()
-
-            val users = GroupMemberTable.select { GroupMemberTable.groupId eq id.id }
+            val group = GroupTable.select { (GroupTable.name eq name) and (GroupTable.chatId eq chatId)}.first()
+            val id = group[GroupTable.id].value
+            val users = GroupMemberTable.select { GroupMemberTable.groupId eq id}
                 .map {
                     UserId(it[GroupMemberTable.participantId])
                 }
 
             Group(
-                id = id,
+                id = GroupId(id),
                 name = group[GroupTable.name],
                 users = users
             )
         }
     }
 
+    override fun hasGroup(chatId: Long, name: String): Boolean {
+        val hasUser = transaction(database) {
+            GroupTable.select { (GroupTable.chatId eq chatId) and (GroupTable.name eq name) }
+                .count()
+        }
+
+        return hasUser > 0
+    }
+
     override fun getGroups(chatId: Long): List<Group> {
         return transaction(database) {
             GroupTable.select{GroupTable.chatId eq chatId}.map {
-                val groupId = GroupId(it[GroupTable.id].value)
-                getGroup(groupId)
+                val groupName = it[GroupTable.name]
+                getGroup(chatId, groupName)
             }
         }
     }

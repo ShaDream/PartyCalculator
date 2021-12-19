@@ -44,7 +44,8 @@ data class Group(
 interface GroupRepo {
     fun addGroup(chatId: Long, name: String, users: List<UserId>): GroupId
     fun removeGroup(id: GroupId): Boolean
-    fun getGroup(id: GroupId): Group
+    fun getGroup(chatId: Long, name: String): Group
     fun getGroups(chatId: Long): List<Group>
+    fun hasGroup(chatId: Long, name: String): Boolean
 }
 

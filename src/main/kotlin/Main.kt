@@ -1,4 +1,5 @@
 import action.ActionsManager
+import action.GroupActionManager
 import action.MainActionManager
 import action.ParticipantActionManager
 import action.ReceiptActionManager
@@ -9,6 +10,9 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.sksamuel.hoplite.ConfigLoader
 import config.ApplicationConfig
 import feature.MainFeature
+import feature.group.GroupAddFeature
+import feature.group.GroupEditFeature
+import feature.group.GroupListFeature
 import feature.participant.ParticipantAddFeature
 import feature.participant.ParticipantListFeature
 import feature.participant.ParticipantsDeleteFeature
@@ -16,6 +20,8 @@ import feature.receipt.ReceiptAddFeature
 import message.Message
 import org.jetbrains.exposed.sql.Database
 import repository.*
+import repository.Groups
+import repository.Participants
 import state.State
 
 fun main() {
@@ -30,13 +36,14 @@ fun main() {
     )
 
     val participantsRepo = Participants(database)
-    val groupRepo = Groups(database)
+    val groupsRepo = Groups(database)
     val receiptRepo = Receipts(database)
 
     val actionsManager = ActionsManager.Builder()
         .setBaseManager(MainActionManager())
         .addManager(State.People, ParticipantActionManager())
         .addManager(State.Receipt, ReceiptActionManager())
+        .addManager(State.Group, GroupActionManager())
         .build()
 
     val viewModel =
@@ -46,7 +53,10 @@ fun main() {
                 ParticipantAddFeature(participantsRepo),
                 ParticipantListFeature(participantsRepo),
                 ParticipantsDeleteFeature(participantsRepo),
-                ReceiptAddFeature(participantsRepo, groupRepo, receiptRepo)
+                ReceiptAddFeature(participantsRepo, groupsRepo, receiptRepo),
+                GroupAddFeature(groupsRepo),
+                GroupEditFeature(groupsRepo, participantsRepo),
+                GroupListFeature(groupsRepo),
             )
 
         )
