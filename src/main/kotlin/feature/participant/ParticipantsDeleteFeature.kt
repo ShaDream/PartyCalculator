@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.ParticipantManager
 import message.Buttons
 import message.Message
+import repository.Group
 import repository.ParticipantsRepo
 import repository.User
 import state.State
@@ -16,6 +17,8 @@ import java.lang.IllegalArgumentException
 import java.util.*
 
 class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) : IFeature {
+
+
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Participant.Remove }
@@ -46,7 +49,7 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                                         "Отображаются только те, у кого нет счетов.\n" +
                                         "Чтобы отображался каждый участник, удалите все чеки.\n",
                                 chatId = it.chatId,
-                                buttons = Buttons.from(buttons + "/next" + "/previous" + "/delete" + "/end")
+                                buttons = Buttons.from(buttons + "/previous" + "/next" + "/delete" + "/end")
                             )
                         }
                     }

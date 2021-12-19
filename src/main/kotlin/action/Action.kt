@@ -17,16 +17,31 @@ sealed class Action(chatId: Long) {
             data class New(val chatId: Long, val message: String) : Add(chatId)
         }
 
-        sealed class Remove(chatId: Long): Action(chatId){
-            data class Start(val chatId: Long): Remove(chatId)
-            data class End(val chatId: Long): Remove(chatId)
-            data class Next(val chatId: Long): Remove(chatId)
-            data class Previous(val chatId: Long): Remove(chatId)
+        sealed class Remove(chatId: Long) : Action(chatId) {
+            data class Start(val chatId: Long) : Remove(chatId)
+            data class End(val chatId: Long) : Remove(chatId)
+            data class Next(val chatId: Long) : Remove(chatId)
+            data class Previous(val chatId: Long) : Remove(chatId)
             data class Choice(val chatId: Long, val message: String) : Remove(chatId)
             data class Delete(val chatId: Long) : Remove(chatId)
         }
 
         data class List(val chatId: Long) : Participant(chatId)
+    }
+
+    sealed class Receipt(chatId: Long) : Action(chatId) {
+        sealed class Add(chatId: Long) : Receipt(chatId) {
+            data class Start(val chatId: Long) : Add(chatId)
+            data class Discard(val chatId: Long) : Add(chatId)
+            data class Back(val chatId: Long) : Add(chatId)
+            data class Number(val chatId: Long, val number: Float) : Add(chatId)
+            data class Previous(val chatId: Long): Add(chatId)
+            data class Next(val chatId: Long): Add(chatId)
+            data class NextGroup(val chatId: Long): Add(chatId)
+            data class PreviousGroup(val chatId: Long): Add(chatId)
+            data class Apply(val chatId: Long): Add(chatId)
+            data class Choice(val chatId: Long,val value: String): Add(chatId)
+        }
     }
 
     data class UndefinedAction(val chatId: Long) : Action(chatId)

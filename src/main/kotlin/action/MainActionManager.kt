@@ -12,6 +12,8 @@ class MainActionManager : IActionsManager {
             "/createPeople" -> Action.Participant.Add.Start(chatId)
             "/listPeople" -> Action.Participant.List(chatId)
             "/deletePeople" -> Action.Participant.Remove.Start(chatId)
+
+            "/addReceipt" -> Action.Receipt.Add.Start(chatId)
             else -> Action.UndefinedAction(chatId)
         }
     }

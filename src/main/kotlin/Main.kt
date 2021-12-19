@@ -1,6 +1,7 @@
 import action.ActionsManager
 import action.MainActionManager
 import action.ParticipantActionManager
+import action.ReceiptActionManager
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.text
@@ -11,9 +12,10 @@ import feature.MainFeature
 import feature.participant.ParticipantAddFeature
 import feature.participant.ParticipantListFeature
 import feature.participant.ParticipantsDeleteFeature
+import feature.receipt.ReceiptAddFeature
 import message.Message
 import org.jetbrains.exposed.sql.Database
-import repository.Participants
+import repository.*
 import state.State
 
 fun main() {
@@ -28,10 +30,13 @@ fun main() {
     )
 
     val participantsRepo = Participants(database)
+    val groupRepo = Groups(database)
+    val receiptRepo = Receipts(database)
 
     val actionsManager = ActionsManager.Builder()
         .setBaseManager(MainActionManager())
         .addManager(State.People, ParticipantActionManager())
+        .addManager(State.Receipt, ReceiptActionManager())
         .build()
 
     val viewModel =
@@ -40,7 +45,8 @@ fun main() {
                 MainFeature(),
                 ParticipantAddFeature(participantsRepo),
                 ParticipantListFeature(participantsRepo),
-                ParticipantsDeleteFeature(participantsRepo)
+                ParticipantsDeleteFeature(participantsRepo),
+                ReceiptAddFeature(participantsRepo, groupRepo, receiptRepo)
             )
 
         )

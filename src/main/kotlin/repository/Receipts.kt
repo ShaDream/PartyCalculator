@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class Receipts(private val database: Database) : ReceiptRepo {
-    override fun addReceipt(from: UserId, to: List<UserId>, fullAmount: Float): Receipt {
+    override fun addReceipt(chatId: Long, from: UserId, to: List<UserId>, fullAmount: Float): Receipt {
         return transaction(database) {
             val receipt = ReceiptsTable.insert {
                 it[ReceiptsTable.chatId] = chatId
