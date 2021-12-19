@@ -15,7 +15,9 @@ class MainFeature : IFeature {
                 when (action) {
                     is Action.Main.Start ->
                         Message.Text(
-                            message = "Привет, это стартовый обработчик",
+                            message = "Привет, этот бот сделает совместные покупки проще.\n\n" +
+                                    "Поможем разделить траты между участниками и скажем кто кому и сколько должен перевести.\n\n" +
+                                    "Нажмите команду /help для подробносей.",
                             chatId = action.chatId,
                             buttons = Buttons.from(
                                 listOf(

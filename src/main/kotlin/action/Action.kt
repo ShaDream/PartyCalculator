@@ -42,6 +42,7 @@ sealed class Action(chatId: Long) {
             data class Apply(val chatId: Long): Add(chatId)
             data class Choice(val chatId: Long,val value: String): Add(chatId)
         }
+        data class List(val chatId: Long) : Participant(chatId)
     }
 
     sealed class Group(chatId: Long) : Action(chatId) {

@@ -50,9 +50,9 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                             val choiceManager = ParticipantManager.getChoiceManager(it.chatId)
 
                             Message.Text(
-                                message = "Выберите участников для удаления.\n" +
-                                        "Отображаются только те, у кого нет счетов.\n" +
-                                        "Чтобы отображался каждый участник, удалите все чеки.\n",
+                                message = "Выберите участников для удаления.\n\n" +
+                                        "Отображаются только те, у кого нет счетов.\n\n" +
+                                        "Чтобы отображался каждый участник, удалите все чеки",
                                 chatId = it.chatId,
                                 buttons = Buttons.from(getParticipantsButtons(choiceManager))
                             )
@@ -94,7 +94,7 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
 
                             if (selected.isEmpty()) {
                                 Message.Text(
-                                    message = "Вы никого не выбрали",
+                                    message = "Вы никого не выбрали.",
                                     chatId = it.chatId,
                                     buttons = Buttons.from(listOf())
                                 )

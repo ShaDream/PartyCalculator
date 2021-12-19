@@ -16,14 +16,23 @@ class ParticipantListFeature(private val participantsRepo: ParticipantsRepo) : I
             .map { action ->
                 when (action) {
                     is Action.Participant.List -> {
-                        val participants =
-                            participantsRepo.getUsersByChatId(action.chatId).joinToString(separator = ", ") { it.name }
 
-                        Message.Text(
-                            message = "Участники:\n$participants",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(listOf()),
-                        )
+                        val participants = participantsRepo.getUsersByChatId(action.chatId)
+
+                        if (participants.isEmpty()) {
+                            Message.Text(
+                                message = "Список участников пуст.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        } else {
+                            Message.Text(
+                                message = "Список участников:\n" +
+                                        participants.joinToString(separator = ", ") { it.name },
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
                     }
                     else -> throw IllegalArgumentException("Такой Action не обрабатывается этой фичей")
                 }

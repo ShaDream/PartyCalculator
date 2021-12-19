@@ -25,7 +25,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                         val chatId = action.chatId
                         if (ParticipantManager.hasAddState(chatId)) {
                             Message.Text(
-                                message = "Вы уже в режиме добавление участников. Введите имя нового участника:",
+                                message = "Вы уже в режиме добавление участников. Введите имя нового участника.",
                                 chatId = chatId,
                                 buttons = Buttons.from(
                                     listOf(listOf("/end"))
@@ -36,7 +36,8 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                             StateManager.setStateByChatId(chatId, State.People)
 
                             Message.Text(
-                                message = "Включен режим добавление участников. Введите имя нового участника:",
+                                message = "Включен режим добавление участников.\n\n" +
+                                        "Введите имя нового участника:",
                                 chatId = chatId,
                                 buttons = Buttons.from(
                                     listOf(listOf("/end"))
@@ -52,7 +53,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                             StateManager.setStateByChatId(chatId, State.None)
 
                             Message.Text(
-                                message = "Вы вышли из режима добавления участников:",
+                                message = "Вы вышли из режима добавления участников.",
                                 chatId = chatId,
                                 buttons = Buttons.from(
                                     listOf(listOf("/people"))
@@ -60,7 +61,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                             )
                         } else {
                             Message.Text(
-                                message = "Вы не находитесь в режиме добавления участников:",
+                                message = "Вы не находитесь в режиме добавления участников.",
                                 chatId = chatId,
                                 buttons = Buttons.from(listOf()),
                             )
@@ -72,14 +73,14 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                         val message = action.message
                         if (!ParticipantManager.hasAddState(chatId)) {
                             return@map Message.Text(
-                                message = "Вы не находитесь в режиме добавления участников:",
+                                message = "Вы не находитесь в режиме добавления участников.",
                                 chatId = chatId,
                                 buttons = Buttons.from(listOf()),
                             )
                         }
                         if (participantsRepo.hasUser(message, chatId)) {
                             return@map Message.Text(
-                                message = "Такой участник уже есть",
+                                message = "Такой участник уже есть.",
                                 chatId = chatId,
                                 buttons = Buttons.from(listOf()),
                             )
@@ -104,7 +105,7 @@ class ParticipantAddFeature(private val participantsRepo: ParticipantsRepo, priv
                         participantsRepo.createUser(message, chatId)
 
                         Message.Text(
-                            message = "Вы создали пользователя: $message",
+                            message = "Вы создали пользователя: $message.",
                             chatId = chatId,
                             buttons = Buttons.from(listOf()),
                         )

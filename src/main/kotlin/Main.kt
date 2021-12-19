@@ -17,6 +17,7 @@ import feature.participant.ParticipantAddFeature
 import feature.participant.ParticipantListFeature
 import feature.participant.ParticipantsDeleteFeature
 import feature.receipt.ReceiptAddFeature
+import feature.receipt.ReceiptListFeature
 import message.Message
 import org.jetbrains.exposed.sql.Database
 import repository.*
@@ -54,6 +55,7 @@ fun main() {
                 ParticipantListFeature(participantsRepo),
                 ParticipantsDeleteFeature(participantsRepo),
                 ReceiptAddFeature(participantsRepo, groupsRepo, receiptRepo),
+                ReceiptListFeature(receiptRepo, participantsRepo),
                 GroupAddFeature(groupsRepo, participantsRepo),
                 GroupEditFeature(groupsRepo, participantsRepo),
                 GroupListFeature(groupsRepo),
