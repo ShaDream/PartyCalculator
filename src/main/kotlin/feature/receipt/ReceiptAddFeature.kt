@@ -172,7 +172,7 @@ class ReceiptAddFeature(
         }
     }
 
-    fun handleParticipantsState(action: Action, state: ChatIdAddState): Message {
+    private fun handleParticipantsState(action: Action, state: ChatIdAddState): Message {
         return when (action) {
             is Action.Receipt.Add.Back -> {
                 state.currentState = AddState.BuyerChoosing
