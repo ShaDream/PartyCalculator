@@ -24,6 +24,16 @@ class ReceiptActionManager : IActionsManager {
                     }
                 }
             }
+
+            ReceiptManager.hasRemoveState(chatId) -> {
+                return when (command) {
+                    "/end" -> Action.Receipt.Remove.End(chatId)
+                    "➡️" -> Action.Receipt.Remove.Next(chatId)
+                    "⬅️" -> Action.Receipt.Remove.Previous(chatId)
+                    "/delete" -> Action.Receipt.Remove.Delete(chatId)
+                    else -> Action.Receipt.Remove.Choice(chatId, command.orEmpty())
+                }
+            }
         }
 
         return Action.UndefinedAction(chatId)

@@ -32,10 +32,12 @@ data class ChoiceManager<T>(val elems: List<T>, val pageSize: Int) {
         return false
     }
 
+    fun getCurrentPage(): List<T> {
+        return elems.subList(currentPage * pageSize, minOf((currentPage + 1) * pageSize, elems.size))
+    }
+
     fun getButtons(f: (T) -> String, previousButton: String, nextButton: String): List<String> {
-        var buttons = elems
-            .subList(currentPage * pageSize, minOf((currentPage + 1) * pageSize, elems.size))
-            .map { if (selected.contains(it)) "${f(it)} ✅" else f(it) }
+        var buttons = getCurrentPage().map { if (selected.contains(it)) "${f(it)} ✅" else f(it) }
 
         if (currentPage > 0)
             buttons = listOf(previousButton) + buttons

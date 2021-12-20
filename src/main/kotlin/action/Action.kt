@@ -43,6 +43,15 @@ sealed class Action(open val chatId: Long) {
         }
 
         data class List(override val chatId: Long) : Participant(chatId)
+
+        sealed class Remove(chatId: Long) : Action(chatId) {
+            data class Start(override val chatId: Long) : Remove(chatId)
+            data class End(override val chatId: Long) : Remove(chatId)
+            data class Next(override val chatId: Long) : Remove(chatId)
+            data class Previous(override val chatId: Long) : Remove(chatId)
+            data class Choice(override val chatId: Long, val message: String) : Remove(chatId)
+            data class Delete(override val chatId: Long) : Remove(chatId)
+        }
     }
 
     sealed class Group(chatId: Long) : Action(chatId) {

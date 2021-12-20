@@ -1,8 +1,7 @@
 package manager
 
-import action.Action
-import com.github.kotlintelegrambot.entities.ChatId
 import repository.Group
+import repository.Receipt
 import repository.User
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -10,6 +9,9 @@ import javax.swing.text.html.Option
 
 object ReceiptManager {
     private var addState = ConcurrentHashMap<Long, ChatIdAddState>()
+    private var removeState = ConcurrentHashMap.newKeySet<Long>()
+
+    private var choiceManagerMap: ConcurrentHashMap<Long, ChoiceManager<Receipt>> = ConcurrentHashMap()
 
     fun createAddState(chatId: Long, groups: List<Group>, peoples: List<User>): ChatIdAddState {
         val chatIdAddState = ChatIdAddState(peoples, groups)
@@ -28,6 +30,34 @@ object ReceiptManager {
 
     fun getAddState(chatId: Long): Optional<ChatIdAddState> {
         return Optional.ofNullable(addState[chatId])
+    }
+
+    fun addRemoveState(chatId: Long) {
+       removeState.add(chatId)
+    }
+
+    fun removeRemoveState(chatId: Long) {
+        removeState.remove(chatId)
+    }
+
+    fun hasRemoveState(chatId: Long): Boolean {
+        return removeState.contains(chatId)
+    }
+
+    fun createChoiceManager(chatId: Long, users: List<Receipt>) {
+        choiceManagerMap[chatId] = ChoiceManager(users, 3)
+    }
+
+    fun hasChoiceManager(chatId: Long): Boolean {
+        return choiceManagerMap.containsKey(chatId)
+    }
+
+    fun getChoiceManager(chatId: Long): ChoiceManager<Receipt> {
+        return choiceManagerMap.getValue(chatId)
+    }
+
+    fun removeChoiceManager(chatId: Long) {
+        choiceManagerMap.remove(chatId)
     }
 }
 
