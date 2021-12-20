@@ -4,7 +4,9 @@ import action.Action
 import com.github.kotlintelegrambot.entities.ChatId
 import repository.Group
 import repository.User
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import javax.swing.text.html.Option
 
 object ReceiptManager {
     private var addState = ConcurrentHashMap<Long, ChatIdAddState>()
@@ -24,8 +26,8 @@ object ReceiptManager {
         return addState.containsKey(chatId)
     }
 
-    fun getAddState(chatId: Long): ChatIdAddState? {
-        return addState[chatId]
+    fun getAddState(chatId: Long): Optional<ChatIdAddState> {
+        return Optional.ofNullable(addState[chatId])
     }
 }
 

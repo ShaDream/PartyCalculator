@@ -2,9 +2,11 @@ package feature.receipt
 
 import action.Action
 import feature.IFeature
+import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.AddState
+import manager.ChatIdAddState
 import manager.ChoiceManager
 import manager.ReceiptManager
 import message.Buttons
@@ -12,14 +14,13 @@ import message.Message
 import repository.*
 import state.State
 import state.StateManager
-import java.lang.IllegalArgumentException
 
 class ReceiptAddFeature(
     val participantsRepo: ParticipantsRepo,
     val groupRepo: GroupRepo,
     val receiptRepo: ReceiptRepo
 ) : IFeature {
-    fun getChangedGroups(selected: List<User>, groups: List<Group>, selectedGroups: List<Group>): List<Group> {
+    private fun getChangedGroups(selected: List<User>, groups: List<Group>, selectedGroups: List<Group>): List<Group> {
         val uid = selected.map { it.id }
         val used = groups.map { uid.containsAll(it.users) }
         val changed = mutableListOf<Group>()
@@ -30,7 +31,10 @@ class ReceiptAddFeature(
         return changed
     }
 
-    fun getParticipantsButtons(groups: ChoiceManager<Group>, participants: ChoiceManager<User>): List<List<String>> {
+    private fun getParticipantsButtons(
+        groups: ChoiceManager<Group>,
+        participants: ChoiceManager<User>
+    ): List<List<String>> {
         return listOf(
             participants.getButtons({ it.name }, "⬅️", "➡️"),
             groups.getButtons({ it.name }, "◀️", "▶️"),
@@ -38,11 +42,314 @@ class ReceiptAddFeature(
         )
     }
 
-    fun getBuyerButtons(buyer: ChoiceManager<User>): List<List<String>> {
+    private fun getBuyerButtons(buyer: ChoiceManager<User>): List<List<String>> {
         return listOf(
             buyer.getButtons({ it.name }, "⬅️", "➡️"),
             listOf("/back", "/discard", "/apply")
         )
+    }
+
+    private fun handleAmountState(action: Action, state: ChatIdAddState): Message {
+        return when (action) {
+            is Action.Receipt.Add.Number -> {
+                if (action.number <= 0) {
+                    return Message.Text(
+                        message = "Неправильная сумма",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(
+                            listOf()
+                        )
+                    )
+                }
+
+                state.currentState = AddState.BuyerChoosing
+                state.amount = action.number
+
+                Message.Text(
+                    message = "Успешно сохранено. Теперь выберете покупателя.",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getBuyerButtons(state.buyer)
+                    )
+                )
+            }
+            else -> Message.Text(
+                message = "Данная команда не доступна в этом состоянии",
+                chatId = action.chatId,
+                buttons = Buttons.from(
+                    listOf()
+                )
+            )
+
+        }
+    }
+
+    private fun handleBuyerState(action: Action, state: ChatIdAddState): Message {
+        return when (action) {
+            is Action.Receipt.Add.Back -> {
+                state.currentState = AddState.AmountAdding
+
+                Message.Text(
+                    message = "Введите сумму покупок:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        listOf(listOf("/discard"))
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Next -> {
+                state.buyer.nextPage()
+
+                Message.Text(
+                    message = "Следующая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getBuyerButtons(state.buyer)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Previous -> {
+                state.buyer.previousPage()
+
+                Message.Text(
+                    message = "Предыдущая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getBuyerButtons(state.buyer)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Choice -> {
+                val value = NameChecker.getNameWithoutCheckSymbol(action.value)
+
+                val pressedUser = state.people.firstOrNull { it.name == value }
+                    ?: return Message.Text(
+                        message = "Такого пользователя нет",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(listOf())
+                    )
+
+                state.buyer.toggle(pressedUser)
+
+                Message.Text(
+                    message = "Вы нажали на ${value}.",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(getBuyerButtons(state.buyer))
+                )
+            }
+
+            is Action.Receipt.Add.Apply -> {
+                if (state.buyer.getSelected().count() != 1) {
+                    return Message.Text(
+                        message = "Нужно выбрать лишь одного покупателя",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(
+                            listOf()
+                        )
+                    )
+                }
+
+                state.currentState = AddState.ParticipantsChoosing
+                Message.Text(
+                    message = "Добавьте участников покупки(на кого её делить):",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(state.participentsGroup, state.participents)
+                    )
+                )
+            }
+
+            else -> Message.Text(
+                message = "Данная команда не доступна в этом состоянии",
+                chatId = action.chatId,
+                buttons = Buttons.from(
+                    listOf()
+                )
+            )
+        }
+    }
+
+    fun handleParticipantsState(action: Action, state: ChatIdAddState): Message {
+        return when (action) {
+            is Action.Receipt.Add.Back -> {
+                state.currentState = AddState.BuyerChoosing
+                Message.Text(
+                    message = "Выберете покупателя:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getBuyerButtons(state.buyer)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Next -> {
+                state.participents.nextPage()
+
+                Message.Text(
+                    message = "Следующая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(state.participentsGroup, state.participents)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Previous -> {
+                state.participents.previousPage()
+
+                Message.Text(
+                    message = "Предыдущая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(state.participentsGroup, state.participents)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.NextGroup -> {
+                state.participentsGroup.nextPage()
+
+                Message.Text(
+                    message = "Следующая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(state.participentsGroup, state.participents)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.PreviousGroup -> {
+                state.participentsGroup.previousPage()
+
+                Message.Text(
+                    message = "Предыдущая страница:",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(state.participentsGroup, state.participents)
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Choice -> {
+                val value = NameChecker.getNameWithoutCheckSymbol(action.value)
+
+                val isGroup = state.groups.firstOrNull { it.name == value }
+                val isUser = state.people.firstOrNull { it.name == value }
+
+                if (isGroup == null && isUser == null) {
+                    return Message.Text(
+                        message = "Такого пользователя или гпуппы не существует.",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(
+                            listOf()
+                        )
+                    )
+                }
+
+                if (isGroup != null) {
+                    val pressedSelectedGroup = state.participentsGroup.getSelected()
+                        .firstOrNull { it.name == isGroup.name } != null
+
+                    // if pressed group is already selected, then unselect all participants of this group
+                    if (pressedSelectedGroup) {
+                        isGroup.users
+                            .map { groupUserId -> state.people.first { it.id == groupUserId } }
+                            .forEach { state.participents.toggle(it) }
+
+                    }
+                    // if pressed group is not selected, then select all unselected participants of this group
+                    else {
+                        isGroup.users
+                            .map { groupUserId -> state.people.first { it.id == groupUserId } }
+                            .filter { !state.participents.getSelected().contains(it) }
+                            .forEach { state.participents.toggle(it) }
+                    }
+
+                    // recalculate selection for all groups. Return only group that need toggle
+                    getChangedGroups(
+                        state.participents.getSelected(),
+                        state.groups,
+                        state.participentsGroup.getSelected()
+                    ).forEach {
+                        state.participentsGroup.toggle(it)
+                    }
+
+                    return Message.Text(
+                        message = "Нажали на группу ${value}.",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(
+                            getParticipantsButtons(
+                                state.participentsGroup,
+                                state.participents
+                            )
+                        )
+                    )
+                }
+
+                if (isUser != null) {
+                    state.participents.toggle(isUser)
+                }
+
+                // recalculate selection for all groups. Return only group that need toggle
+                getChangedGroups(
+                    state.participents.getSelected(),
+                    state.groups,
+                    state.participentsGroup.getSelected()
+                ).forEach {
+                    state.participentsGroup.toggle(it)
+                }
+
+                return Message.Text(
+                    message = "Нажали на пользователя ${value}.",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        getParticipantsButtons(
+                            state.participentsGroup,
+                            state.participents
+                        )
+                    )
+                )
+            }
+
+            is Action.Receipt.Add.Apply -> {
+                if (state.participents.getSelected().isEmpty()) {
+                    return Message.Text(
+                        message = "Нужно выбрать хотя бы одного участника",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(
+                            listOf()
+                        )
+                    )
+                }
+
+                val selected = state.buyer.getSelected().first()
+
+                val selectedUsers = state.participents.getSelected().map { it.id }
+
+                receiptRepo.addReceipt(action.chatId, selected.id, selectedUsers, state.amount)
+
+                StateManager.setStateByChatId(action.chatId, State.None)
+                ReceiptManager.deleteAddState(action.chatId)
+                Message.Text(
+                    message = "Чек добавлен",
+                    chatId = action.chatId,
+                    buttons = Buttons.from(
+                        listOf(listOf("/receipt"))
+                    )
+                )
+            }
+
+            else -> Message.Text(
+                message = "Данная команда не доступна в этом состоянии",
+                chatId = action.chatId,
+                buttons = Buttons.from(
+                    listOf()
+                )
+            )
+        }
     }
 
     override fun bind(actions: Observable<Action>): Observable<Message> {
@@ -75,330 +382,6 @@ class ReceiptAddFeature(
                         )
                     }
 
-                    is Action.Receipt.Add.NextGroup -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Вы уже находитесь в этом режиме.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-                        if (state.currentState != AddState.ParticipantsChoosing) {
-                            return@map Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        state.participentsGroup.nextPage()
-                        Message.Text(
-                            message = "Следующая страница группы",
-                            chatId = it.chatId,
-                            buttons = Buttons.from(
-                                getParticipantsButtons(state.participentsGroup, state.participents)
-                            )
-                        )
-                    }
-
-                    is Action.Receipt.Add.PreviousGroup -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Вы уже находитесь в этом режиме.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-                        if (state.currentState != AddState.ParticipantsChoosing) {
-                            return@map Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        state.participentsGroup.previousPage()
-                        Message.Text(
-                            message = "Предыдущая страница группы",
-                            chatId = it.chatId,
-                            buttons = Buttons.from(
-                                getParticipantsButtons(state.participentsGroup, state.participents)
-                            )
-                        )
-                    }
-
-                    is Action.Receipt.Add.Next -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Вы уже находитесь в этом режиме.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-                        when (state.currentState) {
-                            AddState.BuyerChoosing -> {
-                                state.buyer.nextPage()
-                                Message.Text(
-                                    message = "Следующая страница",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getBuyerButtons(state.buyer)
-                                    )
-                                )
-                            }
-                            AddState.ParticipantsChoosing -> {
-                                state.participents.nextPage()
-
-                                Message.Text(
-                                    message = "Следующая страница",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getParticipantsButtons(state.participentsGroup, state.participents)
-                                    )
-                                )
-                            }
-                            else -> Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                    }
-
-                    is Action.Receipt.Add.Previous -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Вы не находитесь в этом режиме.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-
-                        when (state.currentState) {
-                            AddState.BuyerChoosing -> {
-                                state.buyer.previousPage()
-
-                                Message.Text(
-                                    message = "Предыдущая страница",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getBuyerButtons(state.buyer)
-                                    )
-                                )
-                            }
-                            AddState.ParticipantsChoosing -> {
-                                state.participents.previousPage()
-
-                                Message.Text(
-                                    message = "предыдущая страница",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getParticipantsButtons(state.participentsGroup, state.participents)
-                                    )
-                                )
-                            }
-                            else -> Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-                    }
-
-                    is Action.Receipt.Add.Apply -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Вы не находитесь в этом режиме.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-                        when (state.currentState) {
-                            AddState.BuyerChoosing -> {
-                                if (state.buyer.getSelected().count() != 1) {
-                                    return@map Message.Text(
-                                        message = "Нужно выбрать лишь одного покупателя",
-                                        chatId = it.chatId,
-                                        buttons = Buttons.from(
-                                            listOf()
-                                        )
-                                    )
-                                }
-
-                                state.currentState = AddState.ParticipantsChoosing
-                                Message.Text(
-                                    message = "Добавьте участников покупки(на кого её делить):",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getParticipantsButtons(state.participentsGroup, state.participents)
-                                    )
-                                )
-                            }
-                            AddState.ParticipantsChoosing -> {
-                                if (state.participents.getSelected().isEmpty()) {
-                                    return@map Message.Text(
-                                        message = "Нужно выбрать хотя бы одного участника",
-                                        chatId = it.chatId,
-                                        buttons = Buttons.from(
-                                            listOf()
-                                        )
-                                    )
-                                }
-
-                                val selected = state.buyer.getSelected().first()
-
-                                val selectedUsers = state.participents.getSelected().map { it.id }
-
-                                receiptRepo.addReceipt(it.chatId, selected.id, selectedUsers, state.amount)
-
-                                StateManager.setStateByChatId(it.chatId, State.None)
-                                ReceiptManager.deleteAddState(it.chatId)
-                                Message.Text(
-                                    message = "Чек добавлен",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        listOf(listOf("/receipt"))
-                                    )
-                                )
-                            }
-
-                            else -> Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-                    }
-
-                    is Action.Receipt.Add.Back -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Режим неактивен",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        var state = ReceiptManager.getAddState(it.chatId)!!
-
-                        when (state.currentState) {
-                            AddState.AmountAdding -> {
-                                Message.Text(
-                                    message = "Это первый шаг. Нельзя вернуться назад",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        listOf()
-                                    )
-                                )
-                            }
-
-                            AddState.BuyerChoosing -> {
-                                state.currentState = AddState.AmountAdding
-                                Message.Text(
-                                    message = "Введите сумму покупок:",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        listOf(listOf("/discard"))
-                                    )
-                                )
-                            }
-
-                            AddState.ParticipantsChoosing -> {
-                                state.currentState = AddState.BuyerChoosing
-                                Message.Text(
-                                    message = "Выберете покупателя:",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getBuyerButtons(state.buyer)
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    is Action.Receipt.Add.Number -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
-                            return@map Message.Text(
-                                message = "Режим неактивен",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        val state = ReceiptManager.getAddState(it.chatId)!!
-
-                        if (state.currentState != AddState.AmountAdding) {
-                            return@map Message.Text(
-                                message = "Вы не находитесь в режиме добавления суммы",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        if (it.number <= 0) {
-                            return@map Message.Text(
-                                message = "Неправильная сумма",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
-                        }
-
-                        state.currentState = AddState.BuyerChoosing
-                        state.amount = it.number
-
-                        Message.Text(
-                            message = "Успешно сохранено. Теперь выберете покупателя.",
-                            chatId = it.chatId,
-                            buttons = Buttons.from(
-                                getBuyerButtons(state.buyer)
-                            )
-                        )
-                    }
-
                     is Action.Receipt.Add.Discard -> {
                         StateManager.setStateByChatId(it.chatId, State.None)
                         ReceiptManager.deleteAddState(it.chatId)
@@ -412,10 +395,12 @@ class ReceiptAddFeature(
                         )
                     }
 
-                    is Action.Receipt.Add.Choice -> {
-                        if (!ReceiptManager.hasAddState(it.chatId)) {
+                    else -> {
+                        val state = ReceiptManager.getAddState(it.chatId)
+
+                        if (state.isEmpty) {
                             return@map Message.Text(
-                                message = "Режим неактивен",
+                                message = "Недопустимая команда.",
                                 chatId = it.chatId,
                                 buttons = Buttons.from(
                                     listOf()
@@ -423,121 +408,16 @@ class ReceiptAddFeature(
                             )
                         }
 
-                        val state = ReceiptManager.getAddState(it.chatId)!!
+                        val validState = state.get()
 
-                        when (state.currentState) {
-                            AddState.BuyerChoosing -> {
-                                val value =
-                                    if (it.value.contains("✅")) it.value.dropLast(2)
-                                    else it.value
-
-                                val pressedUser = state.people.firstOrNull { it.name == value }
-                                    ?: return@map Message.Text(
-                                        message = "Такого пользователя нет",
-                                        chatId = it.chatId,
-                                        buttons = Buttons.from(listOf())
-                                    )
-
-                                state.buyer.toggle(pressedUser)
-
-                                Message.Text(
-                                    message = "Вы нажали на ${value}.",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(getBuyerButtons(state.buyer))
-                                )
-                            }
-
-                            AddState.ParticipantsChoosing -> {
-                                val value =
-                                    if (it.value.contains("✅")) it.value.dropLast(2)
-                                    else it.value
-
-                                val isGroup = state.groups.firstOrNull { it.name == value }
-                                val isUser = state.people.firstOrNull { it.name == value }
-
-                                if (isGroup == null && isUser == null) {
-                                    return@map Message.Text(
-                                        message = "Такого пользователя или гпуппы не существует.",
-                                        chatId = it.chatId,
-                                        buttons = Buttons.from(
-                                            listOf()
-                                        )
-                                    )
-                                }
-
-                                if (isGroup != null) {
-                                    val isSelected = state.participentsGroup.getSelected()
-                                        .firstOrNull { it.name == isGroup.name } != null
-
-                                    if (isSelected) {
-                                        isGroup.users.forEach { userId ->
-                                            val user = state.people.first { it.id == userId }
-                                            state.participents.toggle(user)
-                                        }
-                                    } else {
-                                        isGroup.users.filter { userId ->
-                                            val user = state.people.first { it.id == userId }
-                                            !state.participents.getSelected().contains(user)
-                                        }.forEach { userId ->
-                                            val user = state.people.first { it.id == userId }
-                                            state.participents.toggle(user)
-                                        }
-                                    }
-                                    getChangedGroups(
-                                        state.participents.getSelected(),
-                                        state.groups,
-                                        state.participentsGroup.getSelected()
-                                    ).forEach {
-                                        state.participentsGroup.toggle(it)
-                                    }
-
-                                    return@map Message.Text(
-                                        message = "Нажали на группу ${value}.",
-                                        chatId = it.chatId,
-                                        buttons = Buttons.from(
-                                            getParticipantsButtons(
-                                                state.participentsGroup,
-                                                state.participents
-                                            )
-                                        )
-                                    )
-                                }
-
-                                state.participents.toggle(isUser!!)
-
-                                getChangedGroups(
-                                    state.participents.getSelected(),
-                                    state.groups,
-                                    state.participentsGroup.getSelected()
-                                ).forEach {
-                                    state.participentsGroup.toggle(it)
-                                }
-
-                                return@map Message.Text(
-                                    message = "Нажали на пользователя ${value}.",
-                                    chatId = it.chatId,
-                                    buttons = Buttons.from(
-                                        getParticipantsButtons(
-                                            state.participentsGroup,
-                                            state.participents
-                                        )
-                                    )
-                                )
-                            }
-
-                            else -> Message.Text(
-                                message = "Нельзя использовать команду.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(
-                                    listOf()
-                                )
-                            )
+                        when (validState.currentState) {
+                            AddState.AmountAdding -> handleAmountState(it, validState)
+                            AddState.ParticipantsChoosing -> handleParticipantsState(it, validState)
+                            AddState.BuyerChoosing -> handleBuyerState(it, validState)
                         }
-
                     }
-
-                    else -> throw IllegalArgumentException("Такой Action не обрабатывается этой фичей")
                 }
             }
+
     }
 }
