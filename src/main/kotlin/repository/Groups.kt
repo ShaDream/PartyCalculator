@@ -25,6 +25,45 @@ class Groups(val database: Database) : GroupRepo {
             GroupId(groupId.value)
         }
     }
+    override fun addUsersToGroup(chatId: Long, name: String, users: List<UserId>): Boolean {
+        return transaction(database) {
+            val group = GroupTable.select { (GroupTable.name eq name) and (GroupTable.chatId eq chatId)}.first()
+            val groupId = group[GroupTable.id].value
+
+            users.forEach { id ->
+                if(GroupMemberTable.select {
+                        (GroupMemberTable.participantId eq id.id) and (GroupMemberTable.groupId eq groupId)
+                }.count() > 0L)
+                    return@transaction false
+            }
+
+            users.forEach { id ->
+                GroupMemberTable.insert {
+                    it[GroupMemberTable.groupId] = groupId
+                    it[GroupMemberTable.participantId] = id.id
+                }
+            }
+
+            return@transaction true
+        }
+    }
+
+    override fun removeUsersFromGroup(chatId: Long, name: String, users: List<UserId>): Boolean {
+        return transaction(database) {
+            val group = GroupTable.select {
+                (GroupTable.name eq name) and (GroupTable.chatId eq chatId)
+            }.first()
+            val groupId = group[GroupTable.id].value
+
+            users.forEach { id ->
+                GroupMemberTable.deleteWhere {
+                    (GroupMemberTable.groupId eq groupId) and (GroupMemberTable.participantId eq id.id)
+                }
+            }
+            return@transaction true
+        }
+    }
+
 
     override fun removeGroup(id: GroupId): Boolean {
         return transaction(database) {

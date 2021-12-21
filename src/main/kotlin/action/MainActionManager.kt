@@ -11,6 +11,7 @@ class MainActionManager : IActionsManager {
 
             "/createGroup" -> Action.Group.Add.Start(chatId)
 
+
             "/createPeople" -> Action.Participant.Add.Start(chatId)
             "/listPeople" -> Action.Participant.List(chatId)
             "/deletePeople" -> Action.Participant.Remove.Start(chatId)

@@ -32,28 +32,11 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                             Message.Text(
                                 message = "Введите имя новой группы.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf(listOf("/end")))
+                                buttons = Buttons.from(listOf(listOf("/discard")))
                             )
                         }
                     }
-                    is Action.Group.Add.End -> {
-                        if (GroupManager.hasAddState(action.chatId)) {
-                            GroupManager.removeAddState(action.chatId)
-                            StateManager.setStateByChatId(action.chatId, State.None)
 
-                            Message.Text(
-                                message = "Вы вышли из режима создания групп.",
-                                chatId = action.chatId,
-                                buttons = Buttons.from(listOf(listOf("/group")))
-                            )
-                        } else {
-                            Message.Text(
-                                message = "Вы не находитесь в режиме добавления групп:",
-                                chatId = action.chatId,
-                                buttons = Buttons.from(listOf()),
-                            )
-                        }
-                    }
                     is Action.Group.Add.New -> {
                         if (!GroupManager.hasAddState(action.chatId)) {
                             return@map Message.Text(
@@ -71,14 +54,15 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                         }
                         if (participantsRepo.hasUser(action.message, action.chatId)) {
                             return@map Message.Text(
-                                message = "Есть участник с таким именем.",
+                                message = "Уже есть участник с таким именем.",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf()),
                             )
                         }
                         if (!NameChecker.isNameValid(action.message)) {
                             return@map Message.Text(
-                                message = "Недопустимое имя для группы. Возможно состоит только из цифр или содержит запрещенные символы(\"/\" для примера)",
+                                message = "Недопустимое имя для группы." +
+                                        "Возможно состоит только из цифр или содержит запрещенные символы(\"/\" для примера)",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf()),
                             )
@@ -88,11 +72,31 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                         GroupManager.removeAddState(action.chatId)
                         GroupManager.createEditState(action.chatId, action.message)
                         Message.Text(
-                            message = "Вы создали группу: ${action.message}. \n Сейчас Вы находитесь в меню редактирования группы ${action.message}",
+                            message = "Вы создали группу: ${action.message}. \n" +
+                                    "Сейчас Вы находитесь в меню редактирования группы ${action.message}",
                             chatId = action.chatId,
-                            buttons = Buttons.from(listOf(listOf("/editMembers")))//, "/delete", "/end")),
+                            buttons = Buttons.from(listOf(listOf("/addMembers", "/deleteMembers", "/deleteGroup", "/end")))
                         )
 
+                    }
+
+                    is Action.Group.Add.Discard -> {
+                        if (GroupManager.hasAddState(action.chatId)) {
+                            GroupManager.removeAddState(action.chatId)
+                            StateManager.setStateByChatId(action.chatId, State.None)
+
+                            Message.Text(
+                                message = "Вы вышли из режима создания групп.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf(listOf("/group")))
+                            )
+                        } else {
+                            Message.Text(
+                                message = "Вы не находитесь в режиме добавления групп:",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
                     }
 
                     else -> throw IllegalArgumentException("Not implemented Action for this feature")
