@@ -398,7 +398,7 @@ class ReceiptAddFeature(
                     else -> {
                         val state = ReceiptManager.getAddState(it.chatId)
 
-                        if (state.isEmpty) {
+                        if (!state.isPresent) {
                             return@map Message.Text(
                                 message = "Недопустимая команда.",
                                 chatId = it.chatId,

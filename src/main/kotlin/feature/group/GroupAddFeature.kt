@@ -52,13 +52,6 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                                 buttons = Buttons.from(listOf()),
                             )
                         }
-                        if (participantsRepo.hasUser(action.message, action.chatId)) {
-                            return@map Message.Text(
-                                message = "Уже есть участник с таким именем.",
-                                chatId = action.chatId,
-                                buttons = Buttons.from(listOf()),
-                            )
-                        }
                         if (!NameChecker.isNameValid(action.message)) {
                             return@map Message.Text(
                                 message = "Недопустимое имя для группы." +
@@ -75,7 +68,7 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                             message = "Вы создали группу: ${action.message}. \n" +
                                     "Сейчас Вы находитесь в меню редактирования группы ${action.message}",
                             chatId = action.chatId,
-                            buttons = Buttons.from(listOf(listOf("/addMembers", "/deleteMembers", "/deleteGroup", "/end")))
+                            buttons = Buttons.from(listOf(listOf("/editMembers", "/deleteGroup", "/end")))
                         )
 
                     }

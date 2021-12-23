@@ -8,87 +8,128 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.*
 import message.Buttons
 import message.Message
-import repository.Group
-import repository.GroupRepo
-import repository.ParticipantsRepo
-import repository.User
+import repository.*
 import state.State
 import state.StateManager
 
 
 class GroupEditFeature(private val groupRepo: GroupRepo, private val participantsRepo: ParticipantsRepo) : IFeature {
+    private fun getParticipantsButtons(groupParticipants: GroupUsersEditState): List<List<String>> {
+        return listOf(
+            groupParticipants.usersInGroup.getButtons({ it.name }, "⬅️", "➡️"),
+            groupParticipants.usersNotInGroup.getButtons({ it.name }, "◀️", "▶️"),
+            listOf("/back", "/discard", "/apply")
+        )
+    }
+
+    private fun initializeParticipants(chatId: Long, participants: List<User>, groupMembersIds: List<UserId>){
+
+        GroupManager.removeChoiceManager(chatId)
+        val participantsInGroup: MutableList<User> = mutableListOf()
+        val participantsNotInGroup: MutableList<User> = mutableListOf()
+
+        participants.forEach {
+            if (groupMembersIds.contains(it.id)) {
+                participantsInGroup.add(it)
+            } else {
+                participantsNotInGroup.add(it)
+            }
+        }
+
+        GroupManager.createChoiceManager(chatId, participantsInGroup, participantsNotInGroup)
+    }
+
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Group.Edit }
             .map { action ->
                 when (action) {
-                    is Action.Group.Edit.Start -> {
-                        StateManager.setStateByChatId(action.chatId, State.Group)
-                        GroupManager.createEditState(action.chatId, action.message)
-
-                        Message.Text(
-                            message = "Вы находитесь в окне редактирования группы ${action.message}",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(listOf("/addMembers", "/deleteMembers", "/deleteGroup", "/end"))
+                    is Action.Group.Edit.EditMembers -> {
+                        if(!GroupManager.hasEditState(action.chatId))
+                        {
+                            return@map Message.Text(
+                                message = "Вы не в режиме редактирования группы.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf())
                             )
-                        )
-                    }
+                        }
 
-                    is Action.Group.Edit.AddMembers -> {
                         val participants = participantsRepo.getUsersByChatId(action.chatId)
-                        GroupManager.createChoiceManager(action.chatId, participants)
+                        val groupMembersIds = groupRepo.getGroup(action.chatId, GroupManager.getEditGroupName(action.chatId)).users
+
+                        GroupManager.removeChoiceManager(action.chatId)
+                        val participantsInGroup: MutableList<User> = mutableListOf()
+                        val participantsNotInGroup: MutableList<User> = mutableListOf()
+
+                        participants.forEach {
+                            if (groupMembersIds.contains(it.id)) {
+                                participantsInGroup.add(it)
+                            } else {
+                                participantsNotInGroup.add(it)
+                            }
+                        }
+
+                        GroupManager.createChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
 
                         Message.Text(
-                            message = "Выберите пользователей для добавления:",
+                            message = "Выберите пользователей. \n" +
+                                    "Верхний список - пользователи не в группе. Нижний - в группе:",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    GroupManager.getChoiceManager(action.chatId).getButtons({ it.name }, "⬅️", "➡️"),
-                                    listOf("/back", "/discard", "/apply")
-                                )
-                            )
+                            buttons = Buttons.from(getParticipantsButtons(GroupManager.getChoiceManager(action.chatId)))
                         )
                     }
 
-                    is Action.Group.Edit.Previous -> {
+                    is Action.Group.Edit.PreviousUsersInGroup -> {
                         val cM = GroupManager.getChoiceManager(action.chatId)
-                        cM.previousPage()
+                        cM.usersInGroup.previousPage()
+
+                        Message.Text(
+                            message = "Предыдущая страница:",
+                            chatId = action.chatId,
+                            buttons = Buttons.from(getParticipantsButtons(cM))
+                        )
+                    }
+
+                    is Action.Group.Edit.NextUsersInGroup -> {
+                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        cM.usersInGroup.nextPage()
 
                         Message.Text(
                             message = "Следующая страница:",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    cM.getButtons({ it.name }, "⬅️", "➡️"),
-                                    listOf("/back", "/discard", "/apply")
-                                )
-                            )
+                            buttons = Buttons.from(getParticipantsButtons(cM))
                         )
                     }
 
-                    is Action.Group.Edit.Next -> {
+                    is Action.Group.Edit.PreviousUsersNotInGroup -> {
                         val cM = GroupManager.getChoiceManager(action.chatId)
-                        cM.nextPage()
+                        cM.usersNotInGroup.previousPage()
+
+                        Message.Text(
+                            message = "Предыдущая страница:",
+                            chatId = action.chatId,
+                            buttons = Buttons.from(getParticipantsButtons(cM))
+                        )
+                    }
+
+                    is Action.Group.Edit.NextUsersNotInGroup -> {
+                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        cM.usersNotInGroup.nextPage()
 
                         Message.Text(
                             message = "Следующая страница:",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    cM.getButtons({ it.name }, "⬅️", "➡️"),
-                                    listOf("/back", "/discard", "/apply")
-                                )
-                            )
+                            buttons = Buttons.from(getParticipantsButtons(cM))
                         )
                     }
 
                     is Action.Group.Edit.Choice -> {
                         val value = NameChecker.getNameWithoutCheckSymbol(action.message)
                         val cM = GroupManager.getChoiceManager(action.chatId)
-                        val isUser = cM.elems.firstOrNull { it.name == value }
+                        val isUserIn = cM.usersInGroup.elems.firstOrNull { it.name == value }
+                        val isUserNotIn = cM.usersNotInGroup.elems.firstOrNull { it.name == value }
 
-                        if (isUser == null) {
+                        if (isUserIn == null && isUserNotIn == null) {
                             return@map Message.Text(
                                 message = "Такого пользователя не существует.",
                                 chatId = action.chatId,
@@ -97,25 +138,26 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                                 )
                             )
                         }
-
-                        cM.toggle(isUser)
+                        else
+                        {
+                            if(isUserNotIn != null){
+                                cM.usersNotInGroup.toggle(isUserNotIn)
+                            }
+                            if (isUserIn != null) {
+                                cM.usersNotInGroup.toggle(isUserIn)
+                            }
+                        }
 
                         return@map Message.Text(
-                            message = "Нажали на пользователя ${value}.",
+                            message = "Выбрали пользователя ${value}.",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    cM.getButtons({ it.name }, "⬅️", "➡️"),
-                                    listOf("/back", "/discard", "/apply")
-                                )
-                            )
+                            buttons = Buttons.from(getParticipantsButtons(cM))
                         )
-
                     }
 
                     is Action.Group.Edit.Apply -> {
                         val cM = GroupManager.getChoiceManager(action.chatId)
-                        if (cM.getSelected().isEmpty()) {
+                        if (cM.usersInGroup.getSelected().isEmpty() && cM.usersNotInGroup.getSelected().isEmpty()) {
                             return@map Message.Text(
                                 message = "Нужно выбрать хотя бы одного участника",
                                 chatId = action.chatId,
@@ -125,18 +167,53 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             )
                         }
 
-                        val selectedUsers = cM.getSelected().map { it.id }
+                        val selectedUsersInGroup = cM.usersInGroup.getSelected().map { it.id }
+                        val selectedUsersNotInGroup = cM.usersNotInGroup.getSelected().map { it.id }
 
-                        groupRepo.addUsersToGroup(action.chatId, GroupManager.getEditGroupState(action.chatId), selectedUsers)
-                        StateManager.setStateByChatId(action.chatId, State.None)
-                        GroupManager.removeAddState(action.chatId)
+                        groupRepo.removeUsersFromGroup(action.chatId, GroupManager.getEditGroupName(action.chatId), selectedUsersInGroup)
+                        groupRepo.addUsersToGroup(action.chatId, GroupManager.getEditGroupName(action.chatId), selectedUsersNotInGroup)
+
+                        val participants = participantsRepo.getUsersByChatId(action.chatId)
+                        val groupMembersIds = groupRepo.getGroup(action.chatId, GroupManager.getEditGroupName(action.chatId)).users
+
+                        GroupManager.removeChoiceManager(action.chatId)
+                        val participantsInGroup: MutableList<User> = mutableListOf()
+                        val participantsNotInGroup: MutableList<User> = mutableListOf()
+
+                        participants.forEach {
+                            if (groupMembersIds.contains(it.id)) {
+                                participantsInGroup.add(it)
+                            } else {
+                                participantsNotInGroup.add(it)
+                            }
+                        }
+
+                        GroupManager.createChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
+
                         Message.Text(
                             message = "Пользователи добавлены в группу",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(listOf())
-                            )
+                            buttons = Buttons.from(getParticipantsButtons(cM))
                         )
+                    }
+
+                    is Action.Group.Edit.Back -> {
+                        if (GroupManager.hasEditState(action.chatId)) {
+
+                            GroupManager.removeChoiceManager(action.chatId)
+
+                            Message.Text(
+                                message = "Вы вышли из режима создания групп.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf(listOf("/editMembers", "/deleteGroup", "/end")))
+                            )
+                        } else {
+                            Message.Text(
+                                message = "Вы не находитесь в режиме редактирования групп:",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
                     }
 
                     is Action.Group.Edit.End -> {

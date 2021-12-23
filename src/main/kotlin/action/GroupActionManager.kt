@@ -14,11 +14,13 @@ class GroupActionManager : IActionsManager {
             GroupManager.hasEditState(chatId) -> {
                 return when (command) {
                     "/end" -> Action.Group.Edit.End(chatId)
-                    "/addMembers" -> Action.Group.Edit.AddMembers(chatId)
-                    //"/deleteMembers" -> Action.Group.Edit.AddMembers(chatId)
-                    "⬅️" -> Action.Group.Edit.Previous(chatId)
-                    "➡️" -> Action.Group.Edit.Next(chatId)
+                    "/editMembers" -> Action.Group.Edit.EditMembers(chatId)
+                    "⬅️" -> Action.Group.Edit.PreviousUsersInGroup(chatId)
+                    "➡️" -> Action.Group.Edit.NextUsersInGroup(chatId)
+                    "▶️" -> Action.Group.Edit.NextUsersNotInGroup(chatId)
+                    "◀️" -> Action.Group.Edit.PreviousUsersNotInGroup(chatId)
                     "/apply" -> Action.Group.Edit.Apply(chatId)
+                    "/back" -> Action.Group.Edit.Back(chatId)
                     else -> Action.Group.Edit.Choice(chatId, command.orEmpty())
                 }
             }

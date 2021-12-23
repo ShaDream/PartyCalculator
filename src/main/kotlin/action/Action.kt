@@ -65,10 +65,12 @@ sealed class Action(open val chatId: Long) {
         sealed class Edit(chatId: Long) : Group(chatId) {
             data class Start(override val chatId: Long, val message: String) : Group.Edit(chatId)
             data class End(override val chatId: Long) : Group.Edit(chatId)
-            data class Next(override val chatId: Long) : Group.Edit(chatId)
-            data class Previous(override val chatId: Long) : Group.Edit(chatId)
-            data class AddMembers(override val chatId: Long) : Group.Edit(chatId)
-            data class DeleteMembers(override val chatId: Long) : Group.Edit(chatId)
+            data class PreviousUsersInGroup(override val chatId: Long) : Group.Edit(chatId)
+            data class NextUsersInGroup(override val chatId: Long) : Group.Edit(chatId)
+            data class NextUsersNotInGroup(override val chatId: Long) : Group.Edit(chatId)
+            data class PreviousUsersNotInGroup(override val chatId: Long) : Group.Edit(chatId)
+            data class EditMembers(override val chatId: Long) : Group.Edit(chatId)
+            data class Back(override val chatId: Long) : Group.Edit(chatId)
             data class Choice(override val chatId: Long, val message: String) : Group.Edit(chatId)
             data class Apply(override val chatId: Long) : Group.Edit(chatId)
         }

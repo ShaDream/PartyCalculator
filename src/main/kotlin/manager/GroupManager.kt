@@ -1,5 +1,7 @@
 package manager
 
+import repository.Group
+import repository.Receipt
 import repository.User
 import java.util.concurrent.ConcurrentHashMap
 
@@ -7,7 +9,8 @@ object GroupManager {
     private var addState = ConcurrentHashMap.newKeySet<Long>()
     private var listState = ConcurrentHashMap.newKeySet<Long>()
     private var editExactGroupState: ConcurrentHashMap<Long, String> = ConcurrentHashMap()
-    private var choiceManagerMap: ConcurrentHashMap<Long, ChoiceManager<User>> = ConcurrentHashMap()
+    private var choiceManagerMap = ConcurrentHashMap<Long, GroupUsersEditState>()
+
 
     fun addListState(chatId: Long) {
         addState.add(chatId)
@@ -33,8 +36,7 @@ object GroupManager {
         return addState.contains(chatId)
     }
 
-
-    fun createEditState(chatId: Long, groupName: String) {
+    fun createEditState(chatId: Long, groupName: String, ) {
         editExactGroupState[chatId] = groupName
     }
 
@@ -42,7 +44,7 @@ object GroupManager {
         return editExactGroupState.containsKey(chatId)
     }
 
-    fun getEditGroupState(chatId: Long): String {
+    fun getEditGroupName(chatId: Long): String {
         return editExactGroupState.getValue(chatId)
     }
 
@@ -51,19 +53,25 @@ object GroupManager {
     }
 
 
-    fun createChoiceManager(chatId: Long, users: List<User>) {
-        choiceManagerMap[chatId] = ChoiceManager(users, 3)
+    fun createChoiceManager(chatId: Long, participantsInGroup: List<User>, participantsNotInGroup: List<User>) {
+        choiceManagerMap[chatId] = GroupUsersEditState(participantsInGroup, participantsNotInGroup)
     }
 
     fun hasChoiceManager(chatId: Long): Boolean {
         return choiceManagerMap.containsKey(chatId)
     }
 
-    fun getChoiceManager(chatId: Long): ChoiceManager<User> {
+    fun getChoiceManager(chatId: Long): GroupUsersEditState {
         return choiceManagerMap.getValue(chatId)
     }
 
     fun removeChoiceManager(chatId: Long) {
         choiceManagerMap.remove(chatId)
     }
+}
+
+class GroupUsersEditState(participantsInGroup: List<User>, participantsNotInGroup: List<User>) {
+    var usersInGroup: ChoiceManager<User> = ChoiceManager(participantsInGroup, 3)
+    var usersNotInGroup: ChoiceManager<User> = ChoiceManager(participantsNotInGroup, 3)
+
 }
