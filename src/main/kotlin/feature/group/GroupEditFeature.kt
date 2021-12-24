@@ -2,6 +2,7 @@ package feature.group
 
 import action.Action
 import feature.IFeature
+import helper.CommonButtons.mainGroupButtons
 import helper.CommonButtons.mainMenuButtons
 import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
@@ -54,17 +55,26 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                 when (action) {
                     is Action.Group.Edit.Start -> {
                         val groups = groupRepo.getGroups(action.chatId)
-                        StateManager.setStateByChatId(action.chatId, State.Group)
-                        GroupManager.addChooseToEditState(action.chatId)
-                        GroupManager.createChoiceManager(action.chatId, groups)
+                        if (groups.isEmpty()) {
+                            Message.Text(
+                                message = "Список групп пуст.",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+                        else {
+                            StateManager.setStateByChatId(action.chatId, State.Group)
+                            GroupManager.addChooseToEditState(action.chatId)
+                            GroupManager.createChoiceManager(action.chatId, groups)
 
-                        var cM = GroupManager.getChoiceManager(action.chatId)
+                            var cM = GroupManager.getChoiceManager(action.chatId)
 
-                        Message.Text(
-                            message = "Выберите группу для редактирования",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(getGroupsButtons(cM))
-                        )
+                            Message.Text(
+                                message = "Выберите группу для редактирования",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(getGroupsButtons(cM))
+                            )
+                        }
                     }
 
                     is Action.Group.Edit.ChoiceOfGroup -> {
@@ -77,6 +87,28 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                                     "Сейчас Вы находитесь в меню редактирования группы ${action.message}",
                             chatId = action.chatId,
                             buttons = Buttons.from(listOf(listOf("/editMembers", "/deleteGroup", "/end")))
+                        )
+                    }
+
+                    is Action.Group.Edit.Previous -> {
+                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        cM.previousPage()
+
+                        Message.Text(
+                            message = "Предыдущая страница:",
+                            chatId = action.chatId,
+                            buttons = Buttons.from(getGroupsButtons(cM))
+                        )
+                    }
+
+                    is Action.Group.Edit.Next -> {
+                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        cM.nextPage()
+
+                        Message.Text(
+                            message = "Следующая страница:",
+                            chatId = action.chatId,
+                            buttons = Buttons.from(getGroupsButtons(cM))
                         )
                     }
 
@@ -134,28 +166,6 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             message = "Следующая страница:",
                             chatId = action.chatId,
                             buttons = Buttons.from(getParticipantsButtons(cM))
-                        )
-                    }
-
-                    is Action.Group.Edit.Previous -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
-                        cM.previousPage()
-
-                        Message.Text(
-                            message = "Предыдущая страница:",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(getGroupsButtons(cM))
-                        )
-                    }
-
-                    is Action.Group.Edit.Next -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
-                        cM.nextPage()
-
-                        Message.Text(
-                            message = "Следующая страница:",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(getGroupsButtons(cM))
                         )
                     }
 
@@ -256,9 +266,37 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                         )
                     }
 
+                    is Action.Group.Edit.Delete -> {
+                        if (GroupManager.hasEditState(action.chatId)) {
+                            val editGroupName = GroupManager.getEditGroupName(action.chatId)
+                            if (groupRepo.hasGroup(action.chatId, editGroupName)) {
+                                var groupId = groupRepo.getGroup(action.chatId, editGroupName).id
+                                groupRepo.removeGroup(groupId)
+                                GroupManager.removeEditState(action.chatId)
+                                StateManager.setStateByChatId(action.chatId, State.None)
+                                Message.Text(
+                                    message = "Группа $editGroupName удалена.",
+                                    chatId = action.chatId,
+                                    buttons = Buttons.from(mainGroupButtons())
+                                )
+                            } else {
+                                Message.Text(
+                                    message = "Данной группы не существует:",
+                                    chatId = action.chatId,
+                                    buttons = Buttons.from(listOf())
+                                )
+                            }
+                        } else {
+                            Message.Text(
+                                message = "Вы не находитесь в режиме редактирования групп:",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+                    }
+
                     is Action.Group.Edit.Back -> {
                         if (GroupManager.hasEditState(action.chatId)){
-
                             GroupManager.removeUsersChoiceManager(action.chatId)
 
                             Message.Text(
@@ -268,11 +306,13 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             )
                         } else if(GroupManager.hasChooseToEditState(action.chatId)){
                             GroupManager.removeChooseToEditState(action.chatId)
+                            GroupManager.removeChoiceManager(action.chatId)
                             StateManager.setStateByChatId(action.chatId, State.None)
+
                             Message.Text(
                                 message = "Вы вышли из режима редактирования групп:",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(mainMenuButtons()),
+                                buttons = Buttons.from(mainGroupButtons()),
                             )
                         } else {
                             Message.Text(
@@ -289,9 +329,9 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             StateManager.setStateByChatId(action.chatId, State.None)
 
                             Message.Text(
-                                message = "Вы вышли из режима добавления участников:",
+                                message = "Вы вышли из режима редактирования группы:",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(mainMenuButtons()),
+                                buttons = Buttons.from(mainGroupButtons()),
                             )
                         } else {
                             Message.Text(

@@ -2,6 +2,7 @@ package feature.group
 
 import action.Action
 import feature.IFeature
+import helper.CommonButtons.mainGroupButtons
 import helper.CommonButtons.mainMenuButtons
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -36,21 +37,30 @@ class RemoveGroupFeature(private val groupRepo: GroupRepo): IFeature {
                                 buttons = Buttons.from(listOf())
                             )
                         } else {
-                            GroupManager.addRemoveState(it.chatId)
-                            StateManager.setStateByChatId(it.chatId, State.Group)
-                            println(it.chatId)
-                            if (!GroupManager.hasChoiceManager(it.chatId)) {
-                                val groups = groupRepo.getGroups(it.chatId)
-                                GroupManager.createChoiceManager(it.chatId, groups)
+                            val groups = groupRepo.getGroups(it.chatId)
+                            if (groups.isEmpty()) {
+                                Message.Text(
+                                    message = "Список групп пуст.",
+                                    chatId = it.chatId,
+                                    buttons = Buttons.from(listOf()),
+                                )
                             }
+                            else{
+                                GroupManager.addRemoveState(it.chatId)
+                                StateManager.setStateByChatId(it.chatId, State.Group)
 
-                            val choiceManager = GroupManager.getChoiceManager(it.chatId)
+                                if (!GroupManager.hasChoiceManager(it.chatId)) {
+                                    GroupManager.createChoiceManager(it.chatId, groups)
+                                }
 
-                            Message.Text(
-                                message = "Выберите группы для удаления.",
-                                chatId = it.chatId,
-                                buttons = Buttons.from(getGroupButtons(choiceManager))
-                            )
+                                val choiceManager = GroupManager.getChoiceManager(it.chatId)
+
+                                Message.Text(
+                                    message = "Выберите группы для удаления.",
+                                    chatId = it.chatId,
+                                    buttons = Buttons.from(getGroupButtons(choiceManager))
+                                )
+                            }
                         }
                     }
 
@@ -58,11 +68,10 @@ class RemoveGroupFeature(private val groupRepo: GroupRepo): IFeature {
                         GroupManager.removeChoiceManager(chatId = it.chatId)
                         GroupManager.removeRemoveState(chatId = it.chatId)
                         StateManager.setStateByChatId(it.chatId, State.None)
-
                         Message.Text(
                             message = "Вы вышли из режима удаления групп.",
                             chatId = it.chatId,
-                            buttons = Buttons.from(mainMenuButtons())
+                            buttons = Buttons.from(mainGroupButtons())
                         )
                     }
 
@@ -86,7 +95,7 @@ class RemoveGroupFeature(private val groupRepo: GroupRepo): IFeature {
                                 message = "Вы удалили группы: " +
                                         " ${selected.joinToString(separator = ", ") { group -> group.id.id.toString() }}.",
                                 chatId = it.chatId,
-                                buttons = Buttons.from(mainMenuButtons()),
+                                buttons = Buttons.from(mainGroupButtons()),
                             )
                         }
                     }
@@ -114,12 +123,11 @@ class RemoveGroupFeature(private val groupRepo: GroupRepo): IFeature {
                     }
 
                     is Action.Group.Remove.Choice -> {
-                        println(it.chatId)
                         val chatId = it.chatId
                         val rawName =
                             if (it.message.contains("✅")) it.message.dropLast(2)
                             else it.message
-                        println(rawName)
+
                         val choiceManager = GroupManager.getChoiceManager(chatId)
 
                         val group =

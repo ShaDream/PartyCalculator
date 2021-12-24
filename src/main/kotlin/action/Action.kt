@@ -77,6 +77,7 @@ sealed class Action(open val chatId: Long) {
             data class Next(override val chatId: Long) : Group.Edit(chatId)
             data class BackToMenu(override val chatId: Long) : Edit(chatId)
             data class ChoiceOfGroup(override val chatId: Long, val message: String) : Edit(chatId)
+            data class Delete(override val chatId: Long) : Edit(chatId)
         }
 
         data class List(override val chatId: Long) : Group(chatId)

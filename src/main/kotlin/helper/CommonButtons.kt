@@ -8,4 +8,12 @@ object CommonButtons {
             listOf("/receipt", "/people", "/group"),
         )
     }
+
+    fun mainGroupButtons(): List<List<String>> {
+        return listOf(
+            listOf("/start"),
+            listOf("/createGroup", "/editGroups"),
+            listOf("/removeGroups", "/listGroups")
+        )
+    }
 }

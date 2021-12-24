@@ -3,6 +3,7 @@ package feature.group
 import action.Action
 import feature.IFeature
 import helper.CommonButtons
+import helper.CommonButtons.mainGroupButtons
 import helper.CommonButtons.mainMenuButtons
 import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
@@ -78,12 +79,11 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                     is Action.Group.Add.Discard -> {
                         if (GroupManager.hasAddState(action.chatId)) {
                             GroupManager.removeAddState(action.chatId)
-                            StateManager.setStateByChatId(action.chatId, State.None)
 
                             Message.Text(
-                                message = "Вы вышли из режима создания групп.",
+                                message = "Вы вышли из режима редактирования группы.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(mainMenuButtons())
+                                buttons = Buttons.from(mainGroupButtons())
                             )
                         } else {
                             Message.Text(

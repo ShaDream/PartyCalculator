@@ -22,6 +22,7 @@ class GroupActionManager : IActionsManager {
                     "◀️" -> Action.Group.Edit.PreviousUsersNotInGroup(chatId)
                     "/apply" -> Action.Group.Edit.Apply(chatId)
                     "/back" -> Action.Group.Edit.Back(chatId)
+                    "/deleteGroup" -> Action.Group.Edit.Delete(chatId)
                     else -> Action.Group.Edit.Choice(chatId, command.orEmpty())
                 }
             }
@@ -30,7 +31,7 @@ class GroupActionManager : IActionsManager {
                 return when (command) {
                     "⬅️" -> Action.Group.Edit.Previous(chatId)
                     "➡️" -> Action.Group.Edit.Next(chatId)
-                    "/back" -> Action.Group.Edit.BackToMenu(chatId)
+                    "/back" -> Action.Group.Edit.Back(chatId)
                     else -> Action.Group.Edit.ChoiceOfGroup(chatId, command.orEmpty())
                 }
             }
