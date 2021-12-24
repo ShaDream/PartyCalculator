@@ -19,29 +19,19 @@ class GroupListFeature(private val groupRepo: GroupRepo) : IFeature {
             .filter { it is Action.Group.List }
             .map { action ->
                 when (action) {
-                    is Action.Group.List.Start -> {
-                        StateManager.setStateByChatId(action.chatId, State.Group)
-                        GroupManager.addListState(action.chatId)
-                        Message.Text(
-                            message = "Здесь будет список всех групп кнопками",
-                            chatId = action.chatId,
-                            buttons = Buttons.from(listOf(listOf("/end")))
-                        )
-                    }
+                    is Action.Group.List -> {
+                        val groups = groupRepo.getGroups(action.chatId)
 
-                    is Action.Group.List.End -> {
-                        if (GroupManager.hasListState(action.chatId)) {
-                            GroupManager.removeListState(action.chatId)
-                            StateManager.setStateByChatId(action.chatId, State.None)
-
+                        if (groups.isEmpty()) {
                             Message.Text(
-                                message = "Вы вышли из режима просмотра групп.",
+                                message = "Список групп пуст.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf(listOf("/group"))),
+                                buttons = Buttons.from(listOf()),
                             )
                         } else {
                             Message.Text(
-                                message = "Вы не находитесь в режиме просмотра групп:",
+                                message = "Список групп:\n" +
+                                        groups.joinToString(separator = ", ") { it.name },
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf()),
                             )

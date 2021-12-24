@@ -10,7 +10,9 @@ class MainActionManager : IActionsManager {
             "/group" -> Action.Main.Group(chatId)
 
             "/createGroup" -> Action.Group.Add.Start(chatId)
-
+            "/EditGroups" -> Action.Group.Edit.Start(chatId)
+            "/listGroups" -> Action.Group.List(chatId)
+            "/removeGroups" -> Action.Group.Remove.Start(chatId)
 
             "/createPeople" -> Action.Participant.Add.Start(chatId)
             "/listPeople" -> Action.Participant.List(chatId)

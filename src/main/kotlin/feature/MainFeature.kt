@@ -52,8 +52,9 @@ class MainFeature : IFeature {
                                     listOf("/start"),
                                     listOf(
                                         "/createGroup",
-                                        "/deleteGroup",
-                                        "/listGroup"
+                                        "/EditGroups",
+                                        "/removeGroups",
+                                        "/listGroups"
                                     )
                                 )
                             )

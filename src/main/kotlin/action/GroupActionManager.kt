@@ -24,14 +24,7 @@ class GroupActionManager : IActionsManager {
                     else -> Action.Group.Edit.Choice(chatId, command.orEmpty())
                 }
             }
-
-            GroupManager.hasListState(chatId) -> {
-                return when (command) {
-                    "/end" -> Action.Group.List.End(chatId)
-                    "/listGroup" -> Action.Group.List.Start(chatId)
-                    else -> Action.Group.List.Start(chatId)
-                }
-            }
+            
         }
 
         return Action.UndefinedAction(chatId)
