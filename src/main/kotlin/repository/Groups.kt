@@ -67,13 +67,8 @@ class Groups(val database: Database) : GroupRepo {
 
     override fun removeGroup(id: GroupId): Boolean {
         return transaction(database) {
-            val has = GroupTable.select { GroupTable.id eq id.id }.count() > 0L
-
-            if (!has) {
-                return@transaction false
-            }
-
             GroupMemberTable.deleteWhere { GroupMemberTable.groupId eq id.id }
+
             GroupTable.deleteWhere { GroupTable.id eq id.id } > 0
         }
     }

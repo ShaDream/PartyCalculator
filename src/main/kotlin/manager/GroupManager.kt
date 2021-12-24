@@ -7,22 +7,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 object GroupManager {
     private var addState = ConcurrentHashMap.newKeySet<Long>()
-    private var listState = ConcurrentHashMap.newKeySet<Long>()
+    private var removeState = ConcurrentHashMap.newKeySet<Long>()
     private var editExactGroupState: ConcurrentHashMap<Long, String> = ConcurrentHashMap()
-    private var choiceManagerMap = ConcurrentHashMap<Long, GroupUsersEditState>()
-
-
-    fun addListState(chatId: Long) {
-        addState.add(chatId)
-    }
-
-    fun removeListState(chatId: Long) {
-        addState.remove(chatId)
-    }
-
-    fun hasListState(chatId: Long): Boolean {
-        return addState.contains(chatId)
-    }
+    private var usersChoiceManagerMap = ConcurrentHashMap<Long, GroupUsersEditState>()
+    private var choiceManagerMap = ConcurrentHashMap<Long, ChoiceManager<Group>>()
 
     fun addAddState(chatId: Long) {
         addState.add(chatId)
@@ -34,6 +22,18 @@ object GroupManager {
 
     fun hasAddState(chatId: Long): Boolean {
         return addState.contains(chatId)
+    }
+
+    fun addRemoveState(chatId: Long) {
+        removeState.add(chatId)
+    }
+
+    fun removeRemoveState(chatId: Long) {
+        removeState.remove(chatId)
+    }
+
+    fun hasRemoveState(chatId: Long): Boolean {
+        return removeState.contains(chatId)
     }
 
     fun createEditState(chatId: Long, groupName: String, ) {
@@ -52,21 +52,36 @@ object GroupManager {
         editExactGroupState.remove(chatId)
     }
 
-
-    fun createChoiceManager(chatId: Long, participantsInGroup: List<User>, participantsNotInGroup: List<User>) {
-        choiceManagerMap[chatId] = GroupUsersEditState(participantsInGroup, participantsNotInGroup)
+    fun createChoiceManager(chatId: Long, groups: List<Group>) {
+        choiceManagerMap[chatId] = ChoiceManager(groups, 3)
     }
 
     fun hasChoiceManager(chatId: Long): Boolean {
         return choiceManagerMap.containsKey(chatId)
     }
 
-    fun getChoiceManager(chatId: Long): GroupUsersEditState {
+    fun getChoiceManager(chatId: Long): ChoiceManager<Group> {
         return choiceManagerMap.getValue(chatId)
     }
 
     fun removeChoiceManager(chatId: Long) {
         choiceManagerMap.remove(chatId)
+    }
+
+    fun createUsersChoiceManager(chatId: Long, participantsInGroup: List<User>, participantsNotInGroup: List<User>) {
+        usersChoiceManagerMap[chatId] = GroupUsersEditState(participantsInGroup, participantsNotInGroup)
+    }
+
+    fun hasUsersChoiceManager(chatId: Long): Boolean {
+        return usersChoiceManagerMap.containsKey(chatId)
+    }
+
+    fun getUsersChoiceManager(chatId: Long): GroupUsersEditState {
+        return usersChoiceManagerMap.getValue(chatId)
+    }
+
+    fun removeUsersChoiceManager(chatId: Long) {
+        usersChoiceManagerMap.remove(chatId)
     }
 }
 

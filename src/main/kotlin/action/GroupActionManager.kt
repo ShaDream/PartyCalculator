@@ -1,6 +1,7 @@
 package action
 
 import manager.GroupManager
+import manager.ParticipantManager
 
 class GroupActionManager : IActionsManager {
     override fun getAction(command: String?, chatId: Long): Action {
@@ -24,7 +25,17 @@ class GroupActionManager : IActionsManager {
                     else -> Action.Group.Edit.Choice(chatId, command.orEmpty())
                 }
             }
-            
+
+            GroupManager.hasRemoveState(chatId) -> {
+                return when (command) {
+                    "/end" -> Action.Group.Remove.End(chatId)
+                    "➡️" -> Action.Group.Remove.Next(chatId)
+                    "⬅️" -> Action.Group.Remove.Previous(chatId)
+                    "/delete" -> Action.Group.Remove.Delete(chatId)
+                    else -> Action.Group.Remove.Choice(chatId, command.orEmpty())
+                }
+            }
+
         }
 
         return Action.UndefinedAction(chatId)

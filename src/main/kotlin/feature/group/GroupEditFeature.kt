@@ -24,7 +24,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
 
     private fun initializeParticipants(chatId: Long, participants: List<User>, groupMembersIds: List<UserId>){
 
-        GroupManager.removeChoiceManager(chatId)
+        GroupManager.removeUsersChoiceManager(chatId)
         val participantsInGroup: MutableList<User> = mutableListOf()
         val participantsNotInGroup: MutableList<User> = mutableListOf()
 
@@ -36,7 +36,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
             }
         }
 
-        GroupManager.createChoiceManager(chatId, participantsInGroup, participantsNotInGroup)
+        GroupManager.createUsersChoiceManager(chatId, participantsInGroup, participantsNotInGroup)
     }
 
     override fun bind(actions: Observable<Action>): Observable<Message> {
@@ -57,7 +57,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                         val participants = participantsRepo.getUsersByChatId(action.chatId)
                         val groupMembersIds = groupRepo.getGroup(action.chatId, GroupManager.getEditGroupName(action.chatId)).users
 
-                        GroupManager.removeChoiceManager(action.chatId)
+                        GroupManager.removeUsersChoiceManager(action.chatId)
                         val participantsInGroup: MutableList<User> = mutableListOf()
                         val participantsNotInGroup: MutableList<User> = mutableListOf()
 
@@ -69,18 +69,18 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             }
                         }
 
-                        GroupManager.createChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
+                        GroupManager.createUsersChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
 
                         Message.Text(
                             message = "Выберите пользователей. \n" +
                                     "Верхний список - пользователи не в группе. Нижний - в группе:",
                             chatId = action.chatId,
-                            buttons = Buttons.from(getParticipantsButtons(GroupManager.getChoiceManager(action.chatId)))
+                            buttons = Buttons.from(getParticipantsButtons(GroupManager.getUsersChoiceManager(action.chatId)))
                         )
                     }
 
                     is Action.Group.Edit.PreviousUsersInGroup -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         cM.usersInGroup.previousPage()
 
                         Message.Text(
@@ -91,7 +91,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                     }
 
                     is Action.Group.Edit.NextUsersInGroup -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         cM.usersInGroup.nextPage()
 
                         Message.Text(
@@ -102,7 +102,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                     }
 
                     is Action.Group.Edit.PreviousUsersNotInGroup -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         cM.usersNotInGroup.previousPage()
 
                         Message.Text(
@@ -113,7 +113,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                     }
 
                     is Action.Group.Edit.NextUsersNotInGroup -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         cM.usersNotInGroup.nextPage()
 
                         Message.Text(
@@ -125,7 +125,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
 
                     is Action.Group.Edit.Choice -> {
                         val value = NameChecker.getNameWithoutCheckSymbol(action.message)
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         val isUserIn = cM.usersInGroup.elems.firstOrNull { it.name == value }
                         val isUserNotIn = cM.usersNotInGroup.elems.firstOrNull { it.name == value }
 
@@ -156,7 +156,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                     }
 
                     is Action.Group.Edit.Apply -> {
-                        val cM = GroupManager.getChoiceManager(action.chatId)
+                        val cM = GroupManager.getUsersChoiceManager(action.chatId)
                         if (cM.usersInGroup.getSelected().isEmpty() && cM.usersNotInGroup.getSelected().isEmpty()) {
                             return@map Message.Text(
                                 message = "Нужно выбрать хотя бы одного участника",
@@ -176,7 +176,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                         val participants = participantsRepo.getUsersByChatId(action.chatId)
                         val groupMembersIds = groupRepo.getGroup(action.chatId, GroupManager.getEditGroupName(action.chatId)).users
 
-                        GroupManager.removeChoiceManager(action.chatId)
+                        GroupManager.removeUsersChoiceManager(action.chatId)
                         val participantsInGroup: MutableList<User> = mutableListOf()
                         val participantsNotInGroup: MutableList<User> = mutableListOf()
 
@@ -188,7 +188,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                             }
                         }
 
-                        GroupManager.createChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
+                        GroupManager.createUsersChoiceManager(action.chatId, participantsInGroup, participantsNotInGroup)
 
                         Message.Text(
                             message = "Пользователи добавлены в группу",
@@ -200,7 +200,7 @@ class GroupEditFeature(private val groupRepo: GroupRepo, private val participant
                     is Action.Group.Edit.Back -> {
                         if (GroupManager.hasEditState(action.chatId)) {
 
-                            GroupManager.removeChoiceManager(action.chatId)
+                            GroupManager.removeUsersChoiceManager(action.chatId)
 
                             Message.Text(
                                 message = "Вы вышли из режима создания групп.",

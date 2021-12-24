@@ -4,14 +4,10 @@ import action.Action
 import feature.IFeature
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import manager.GroupManager
-import manager.ParticipantManager
 import message.Buttons
 import message.Message
 import repository.GroupRepo
-import repository.ParticipantsRepo
-import state.State
-import state.StateManager
+
 
 class GroupListFeature(private val groupRepo: GroupRepo) : IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {

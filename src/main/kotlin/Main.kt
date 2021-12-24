@@ -13,6 +13,7 @@ import feature.MainFeature
 import feature.group.GroupAddFeature
 import feature.group.GroupEditFeature
 import feature.group.GroupListFeature
+import feature.group.RemoveGroupFeature
 import feature.participant.ParticipantAddFeature
 import feature.participant.ParticipantListFeature
 import feature.participant.ParticipantsDeleteFeature
@@ -61,6 +62,7 @@ fun main() {
                 GroupAddFeature(groupsRepo, participantsRepo),
                 GroupEditFeature(groupsRepo, participantsRepo),
                 GroupListFeature(groupsRepo),
+                RemoveGroupFeature(groupsRepo)
             )
 
         )

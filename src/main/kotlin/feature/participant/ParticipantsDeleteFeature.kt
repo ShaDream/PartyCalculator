@@ -1,7 +1,6 @@
 package feature.participant
 
 import action.Action
-import action.ParticipantActionManager
 import feature.IFeature
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -9,7 +8,6 @@ import manager.ChoiceManager
 import manager.ParticipantManager
 import message.Buttons
 import message.Message
-import repository.Group
 import repository.ParticipantsRepo
 import repository.User
 import state.State
