@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 object GroupManager {
     private var addState = ConcurrentHashMap.newKeySet<Long>()
     private var removeState = ConcurrentHashMap.newKeySet<Long>()
+    private var chooseToEditState = ConcurrentHashMap.newKeySet<Long>()
     private var editExactGroupState: ConcurrentHashMap<Long, String> = ConcurrentHashMap()
     private var usersChoiceManagerMap = ConcurrentHashMap<Long, GroupUsersEditState>()
     private var choiceManagerMap = ConcurrentHashMap<Long, ChoiceManager<Group>>()
@@ -24,9 +25,22 @@ object GroupManager {
         return addState.contains(chatId)
     }
 
+    fun addChooseToEditState(chatId: Long) {
+        chooseToEditState.add(chatId)
+    }
+
+    fun removeChooseToEditState(chatId: Long) {
+        chooseToEditState.remove(chatId)
+    }
+
+    fun hasChooseToEditState(chatId: Long): Boolean {
+        return chooseToEditState.contains(chatId)
+    }
+
     fun addRemoveState(chatId: Long) {
         removeState.add(chatId)
     }
+
 
     fun removeRemoveState(chatId: Long) {
         removeState.remove(chatId)

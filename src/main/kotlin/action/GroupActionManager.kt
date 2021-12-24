@@ -26,6 +26,14 @@ class GroupActionManager : IActionsManager {
                 }
             }
 
+            GroupManager.hasChooseToEditState(chatId) -> {
+                return when (command) {
+                    "⬅️" -> Action.Group.Edit.Previous(chatId)
+                    "➡️" -> Action.Group.Edit.Next(chatId)
+                    "/back" -> Action.Group.Edit.BackToMenu(chatId)
+                    else -> Action.Group.Edit.ChoiceOfGroup(chatId, command.orEmpty())
+                }
+            }
             GroupManager.hasRemoveState(chatId) -> {
                 return when (command) {
                     "/end" -> Action.Group.Remove.End(chatId)

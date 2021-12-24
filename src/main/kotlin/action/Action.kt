@@ -73,17 +73,21 @@ sealed class Action(open val chatId: Long) {
             data class Back(override val chatId: Long) : Group.Edit(chatId)
             data class Choice(override val chatId: Long, val message: String) : Edit(chatId)
             data class Apply(override val chatId: Long) : Edit(chatId)
+            data class Previous(override val chatId: Long) : Edit(chatId)
+            data class Next(override val chatId: Long) : Group.Edit(chatId)
+            data class BackToMenu(override val chatId: Long) : Edit(chatId)
+            data class ChoiceOfGroup(override val chatId: Long, val message: String) : Edit(chatId)
         }
 
         data class List(override val chatId: Long) : Group(chatId)
 
         sealed class Remove(chatId: Long) : Group(chatId) {
-            data class Start(override val chatId: Long) : Group.Remove(chatId)
-            data class End(override val chatId: Long) : Group.Remove(chatId)
-            data class Next(override val chatId: Long) : Group.Remove(chatId)
-            data class Previous(override val chatId: Long) : Group.Remove(chatId)
-            data class Choice(override val chatId: Long, val message: String) : Group.Remove(chatId)
-            data class Delete(override val chatId: Long) : Group.Remove(chatId)
+            data class Start(override val chatId: Long) : Remove(chatId)
+            data class End(override val chatId: Long) : Remove(chatId)
+            data class Next(override val chatId: Long) : Remove(chatId)
+            data class Previous(override val chatId: Long) : Remove(chatId)
+            data class Choice(override val chatId: Long, val message: String) : Remove(chatId)
+            data class Delete(override val chatId: Long) : Remove(chatId)
         }
     }
 

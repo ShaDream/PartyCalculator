@@ -2,6 +2,8 @@ package feature.group
 
 import action.Action
 import feature.IFeature
+import helper.CommonButtons
+import helper.CommonButtons.mainMenuButtons
 import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -32,7 +34,7 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                             Message.Text(
                                 message = "Введите имя новой группы.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf(listOf("/discard")))
+                                buttons = Buttons.from(listOf(listOf("/back")))
                             )
                         }
                     }
@@ -81,7 +83,7 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                             Message.Text(
                                 message = "Вы вышли из режима создания групп.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf(listOf("/group")))
+                                buttons = Buttons.from(mainMenuButtons())
                             )
                         } else {
                             Message.Text(

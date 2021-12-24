@@ -1,6 +1,7 @@
 package feature
 
 import action.Action
+import helper.CommonButtons.mainMenuButtons
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import message.Buttons
@@ -19,12 +20,7 @@ class MainFeature : IFeature {
                                     "Поможем разделить траты между участниками и скажем кто кому и сколько должен перевести.\n\n" +
                                     "Нажмите команду /help для подробносей.",
                             chatId = action.chatId,
-                            buttons = Buttons.from(
-                                listOf(
-                                    listOf("/start", "/help"),
-                                    listOf("/receipt", "/people", "/group"),
-                                )
-                            )
+                            buttons = Buttons.from(mainMenuButtons())
                         )
                     is Action.Main.Help ->
                         Message.Text(
@@ -52,7 +48,9 @@ class MainFeature : IFeature {
                                     listOf("/start"),
                                     listOf(
                                         "/createGroup",
-                                        "/EditGroups",
+                                        "/EditGroups"
+                                    ),
+                                    listOf(
                                         "/removeGroups",
                                         "/listGroups"
                                     )
