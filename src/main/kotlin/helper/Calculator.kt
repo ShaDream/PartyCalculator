@@ -74,7 +74,6 @@ class Calculator(deltas_array: FloatArray) {
 
             i = i xor previousMask[i]
         }
-        println("calculated")
         return transfers.toTypedArray()
     }
 
@@ -90,7 +89,6 @@ class Calculator(deltas_array: FloatArray) {
     }
 
     fun getTransfers(): Array<Transfer> {
-        println("called")
         if (n <= 18)
             return bitMaskCalculate()
         return greedyCalculate()
