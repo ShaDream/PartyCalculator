@@ -132,10 +132,22 @@ class ReceiptAddFeature(
                         buttons = Buttons.from(listOf())
                     )
 
-                state.buyer.toggle(pressedUser)
+                val toggle = state.buyer.getSelected()
+
+                if (toggle.contains(pressedUser)) {
+                    return Message.Text(
+                        message = "Пользователь $value уже выбран как покупатель чека.",
+                        chatId = action.chatId,
+                        buttons = Buttons.from(getBuyerButtons(state.buyer))
+                    )
+                }
+
+                (toggle + pressedUser).forEach {
+                    state.buyer.toggle(it)
+                }
 
                 Message.Text(
-                    message = "Вы нажали на ${value}.",
+                    message = "Вы выбрали $value покупателем чека.",
                     chatId = action.chatId,
                     buttons = Buttons.from(getBuyerButtons(state.buyer))
                 )
@@ -144,7 +156,7 @@ class ReceiptAddFeature(
             is Action.Receipt.Add.Apply -> {
                 if (state.buyer.getSelected().count() != 1) {
                     return Message.Text(
-                        message = "Нужно выбрать лишь одного покупателя",
+                        message = "Нужно выбрать хотя бы одного покупателя",
                         chatId = action.chatId,
                         buttons = Buttons.from(
                             listOf()
@@ -241,7 +253,7 @@ class ReceiptAddFeature(
 
                 if (isGroup == null && isUser == null) {
                     return Message.Text(
-                        message = "Такого пользователя или гпуппы не существует.",
+                        message = "Такого пользователя или группы не существует.",
                         chatId = action.chatId,
                         buttons = Buttons.from(
                             listOf()
@@ -337,7 +349,10 @@ class ReceiptAddFeature(
                     message = "Чек добавлен",
                     chatId = action.chatId,
                     buttons = Buttons.from(
-                        listOf(listOf("/receipt"))
+                        listOf(
+                            listOf("/start"),
+                            listOf("/receipt")
+                        )
                     )
                 )
             }
@@ -390,7 +405,10 @@ class ReceiptAddFeature(
                             message = "Вы вышли из добавления чека.",
                             chatId = it.chatId,
                             buttons = Buttons.from(
-                                listOf(listOf("/receipt"))
+                                listOf(
+                                    listOf("/receipt"),
+                                    listOf("/receipt")
+                                )
                             )
                         )
                     }
