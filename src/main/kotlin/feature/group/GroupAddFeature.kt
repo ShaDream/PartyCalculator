@@ -2,9 +2,7 @@ package feature.group
 
 import action.Action
 import feature.IFeature
-import helper.CommonButtons
 import helper.CommonButtons.mainGroupButtons
-import helper.CommonButtons.mainMenuButtons
 import helper.NameChecker
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -15,7 +13,7 @@ import repository.*
 import state.State
 import state.StateManager
 
-class GroupAddFeature(private val groupRepo: GroupRepo, private val participantsRepo: ParticipantsRepo) : IFeature {
+class GroupAddFeature(private val groupRepo: GroupRepo) : IFeature {
     override fun bind(actions: Observable<Action>): Observable<Message> {
         return actions.observeOn(Schedulers.computation())
             .filter { it is Action.Group.Add }
@@ -48,17 +46,26 @@ class GroupAddFeature(private val groupRepo: GroupRepo, private val participants
                                 buttons = Buttons.from(listOf())
                             )
                         }
-                        if (groupRepo.hasGroup(action.chatId, action.message)) {
+                        if (action.message == "/back") {
+                            GroupManager.removeAddState(action.chatId)
+                            StateManager.setStateByChatId(action.chatId, State.None)
                             return@map Message.Text(
-                                message = "Данная группы уже была добавлена!",
+                                message = "Вы вышли из режима создания группы.",
                                 chatId = action.chatId,
-                                buttons = Buttons.from(listOf()),
+                                buttons = Buttons.from(mainGroupButtons())
                             )
                         }
                         if (!NameChecker.isNameValid(action.message)) {
                             return@map Message.Text(
                                 message = "Недопустимое имя для группы." +
                                         "Возможно состоит только из цифр или содержит запрещенные символы(\"/\" для примера)",
+                                chatId = action.chatId,
+                                buttons = Buttons.from(listOf()),
+                            )
+                        }
+                        if (groupRepo.hasGroup(action.chatId, action.message)) {
+                            return@map Message.Text(
+                                message = "Данная группы уже была добавлена!",
                                 chatId = action.chatId,
                                 buttons = Buttons.from(listOf()),
                             )

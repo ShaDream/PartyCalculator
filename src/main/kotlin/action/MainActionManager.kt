@@ -21,6 +21,7 @@ class MainActionManager : IActionsManager {
             "/addReceipt" -> Action.Receipt.Add.Start(chatId)
             "/listReceipts" -> Action.Receipt.List(chatId)
             "/removeReceipt" -> Action.Receipt.Remove.Start(chatId)
+            "/calculateReceipts" -> Action.Receipt.Calculate(chatId)
 
             else -> Action.UndefinedAction(chatId)
         }

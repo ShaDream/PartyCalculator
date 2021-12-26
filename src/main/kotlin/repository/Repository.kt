@@ -26,6 +26,8 @@ data class Receipt(
     val amount: Float
 )
 
+data class Transfer(val from: User, val to: User, val amount: Int)
+
 interface ReceiptRepo {
     fun addReceipt(chatId: Long, from: UserId, to: List<UserId>, fullAmount: Float): Receipt
     fun removeReceipt(id: ReceiptId): Boolean

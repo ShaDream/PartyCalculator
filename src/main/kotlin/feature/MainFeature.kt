@@ -18,7 +18,7 @@ class MainFeature : IFeature {
                         Message.Text(
                             message = "Привет, этот бот сделает совместные покупки проще.\n\n" +
                                     "Поможем разделить траты между участниками и скажем кто кому и сколько должен перевести.\n\n" +
-                                    "Нажмите команду /help для подробносей.",
+                                    "Нажмите команду /help для подробностей.",
                             chatId = action.chatId,
                             buttons = Buttons.from(mainMenuButtons())
                         )

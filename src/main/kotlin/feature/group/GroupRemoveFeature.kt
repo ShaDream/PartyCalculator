@@ -3,7 +3,6 @@ package feature.group
 import action.Action
 import feature.IFeature
 import helper.CommonButtons.mainGroupButtons
-import helper.CommonButtons.mainMenuButtons
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import manager.ChoiceManager
@@ -93,7 +92,7 @@ class RemoveGroupFeature(private val groupRepo: GroupRepo): IFeature {
 
                             Message.Text(
                                 message = "Вы удалили группы: " +
-                                        " ${selected.joinToString(separator = ", ") { group -> group.id.id.toString() }}.",
+                                        " ${selected.joinToString(separator = ", ") { group -> group.name }}.",
                                 chatId = it.chatId,
                                 buttons = Buttons.from(mainGroupButtons()),
                             )
