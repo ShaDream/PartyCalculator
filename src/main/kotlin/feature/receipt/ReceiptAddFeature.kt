@@ -406,7 +406,7 @@ class ReceiptAddFeature(
                             chatId = it.chatId,
                             buttons = Buttons.from(
                                 listOf(
-                                    listOf("/receipt"),
+                                    listOf("/start"),
                                     listOf("/receipt")
                                 )
                             )
