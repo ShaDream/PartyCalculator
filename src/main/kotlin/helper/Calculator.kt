@@ -1,22 +1,21 @@
 package helper
 
-data class Transfer(val from: Int, val to: Int, val amount: Float)
+data class Transfer(val from: Int, val to: Int, val amount: Int)
 
-class Calculator(deltas_array: FloatArray) {
+class Calculator(deltas_array: IntArray) {
     private val deltas = deltas_array
     private val n = deltas.size
     private val powN = 1 shl n
-    private val eps = 1e-3
 
     private fun findMasks(): BooleanArray {
         val masks = BooleanArray(powN)
         for (i in 0 until powN) {
-            var sum = 0f
+            var sum = 0
             for (j in 0 until n) {
                 if (i and (1 shl j) != 0)
                     sum += deltas[j]
             }
-            if (-eps < sum && sum < eps)
+            if (sum == 0)
                 masks[i] = true
         }
         return masks
@@ -44,7 +43,7 @@ class Calculator(deltas_array: FloatArray) {
     fun bitMaskCalculate(): Array<Transfer> { //O(3^n) Only n <= 18 is suitable
         val masks = findMasks()
         val previousMask = getMaxPrevMask(masks)
-        val transfers = MutableList(0) {Transfer(0, 0, 0f)}
+        val transfers = MutableList(0) {Transfer(0, 0, 0)}
         val remains = deltas.toTypedArray()
         var i = powN - 1
 
@@ -54,9 +53,9 @@ class Calculator(deltas_array: FloatArray) {
 
             for (j in 0 until n) {
                 if (i and (1 shl j) != 0) {
-                    if (remains[j] > eps)
+                    if (remains[j] > 0)
                         positive.add(j)
-                    else if (remains[j] < -eps)
+                    else if (remains[j] < 0)
                         negative.add(j)
                 }
             }
@@ -65,23 +64,23 @@ class Calculator(deltas_array: FloatArray) {
                 val a = positive.removeLast(); val b = negative.removeLast()
                 transfers.add(Transfer(b, a, remains[a]))
                 remains[b] += remains[a]
-                remains[a] = 0f
-                if (remains[b] > eps)
+                remains[a] = 0
+                if (remains[b] > 0)
                     positive.add(b)
-                else if (remains[b] < -eps)
+                else if (remains[b] < 0)
                     negative.add(b)
             }
 
             i = i xor previousMask[i]
         }
-        println("calculated")
+
         return transfers.toTypedArray()
     }
 
     fun greedyCalculate(): Array<Transfer> { //O(n*log(n))
         val remains = deltas.toTypedArray()
         remains.sort()
-        val transfers = Array(n - 1) {Transfer(0, 0, 0f)}
+        val transfers = Array(n - 1) {Transfer(0, 0, 0)}
         for (i in 0 until n - 1) {
             transfers[i] = Transfer(i, i + 1, -remains[i])
             remains[i + 1] += remains[i]
@@ -90,7 +89,6 @@ class Calculator(deltas_array: FloatArray) {
     }
 
     fun getTransfers(): Array<Transfer> {
-        println("called")
         if (n <= 18)
             return bitMaskCalculate()
         return greedyCalculate()

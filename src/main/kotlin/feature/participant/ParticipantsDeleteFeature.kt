@@ -87,7 +87,7 @@ class ParticipantsDeleteFeature(private val participantsRepo: ParticipantsRepo) 
                             ParticipantManager.removeRemoveState(chatId = it.chatId)
                             StateManager.setStateByChatId(it.chatId, State.None)
                             Message.Text(
-                                message = "Пользовалети ${selected.joinToString(separator = ", ") { it.name }} удалены.",
+                                message = "Пользователи ${selected.joinToString(separator = ", ") { it.name }} удалены.",
                                 chatId = it.chatId,
                                 buttons = Buttons.from(
                                     listOf(listOf("/people"))

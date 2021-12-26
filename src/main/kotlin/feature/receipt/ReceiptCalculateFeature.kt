@@ -21,8 +21,11 @@ class ReceiptCalculateFeature(private val receiptRepo: ReceiptRepo, private val 
             }
         }
 
-        fun makeDeltaArray(users: List<UserReceipt>): FloatArray {
-            return users.map {u -> (u.spend+u.owes)}.toFloatArray()
+        fun makeDeltaArray(users: List<UserReceipt>): IntArray {
+            val arr = users.map {u -> ((u.spend + u.owes) * 100).toInt()}.toIntArray()
+            if (arr.isNotEmpty())
+                arr[0] -= arr.sum()
+            return arr
         }
     }
 
@@ -45,7 +48,7 @@ class ReceiptCalculateFeature(private val receiptRepo: ReceiptRepo, private val 
                     tr -> Transfer(
                         participants[tr.from].user,
                         participants[tr.to].user,
-                        tr.amount
+                        tr.amount / 100f
                     )
                 }
                 if (receipts.isEmpty()) {
